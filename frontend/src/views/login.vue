@@ -1,23 +1,37 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { login } from "@/api/login.api.js";
 import "../assets/css/auth.css";
 
 const email = ref("");
 const senha = ref("");
 const router = useRouter();
+const loading = ref(false);
 
-function entrar() {
+async function entrar() {
   if (!email.value || !senha.value) {
     alert("Preencha todos os campos");
     return;
   }
 
-  // Simulação de login
-  localStorage.setItem("logado", "true");
-  router.push("/home");
+  try {
+    loading.value = true;
+
+    const resposta = await login(email.value, senha.value);
+
+    // Exemplo: salvar token
+    localStorage.setItem("token", resposta.token);
+
+    router.push("/home");
+  } catch (error) {
+    alert("E-mail ou senha inválidos");
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
+
 
 <template>
   <div class="container">
