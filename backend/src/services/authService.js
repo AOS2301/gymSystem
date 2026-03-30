@@ -1,5 +1,5 @@
-
 import { UserRepository } from "../repositories/UserRepository.js";
+import { UserDTO } from "../dto/UserDto.js";
 
 export class AuthService {
   static async login(email, senha) {
@@ -16,11 +16,7 @@ export class AuthService {
     // Exemplo simples (sem JWT ainda)
     return {
       token: "token-exemplo-123",
-      user: {
-        id: user.id,
-        nome: user.nome,
-        email: user.email,
-      },
+      user: new UserDTO(user),
     };
   }
 }

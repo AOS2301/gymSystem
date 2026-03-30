@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { login } from "@/api/login.api.js";
-import "../assets/css/auth.css";
 
 const email = ref("");
 const senha = ref("");
@@ -19,8 +18,6 @@ async function entrar() {
     loading.value = true;
 
     const resposta = await login(email.value, senha.value);
-
-    // Exemplo: salvar token
     localStorage.setItem("token", resposta.token);
 
     router.push("/home");
@@ -32,28 +29,33 @@ async function entrar() {
 }
 </script>
 
-
 <template>
-  <div class="container">
-    <h1>Login</h1>
+  <div class="login-page">
+    <div class="login-box">
+      <h1>Bem-vindo 👋</h1>
+      <p class="subtitle">Faça login para continuar</p>
 
-    <input
-      type="email"
-      placeholder="E-mail"
-      v-model="email"
-    />
+      <input
+        type="email"
+        placeholder="E-mail"
+        v-model="email"
+      />
 
-    <input
-      type="password"
-      placeholder="Senha"
-      v-model="senha"
-    />
+      <input
+        type="password"
+        placeholder="Senha"
+        v-model="senha"
+      />
 
-    <button @click="entrar">Entrar</button>
+      <button @click="entrar" :disabled="loading">
+        <span v-if="loading">Entrando...</span>
+        <span v-else>Entrar</span>
+      </button>
 
-    <p>
-      Não tem cadastro?
-      <router-link to="/register">Criar conta</router-link>
-    </p>
+      <p class="register">
+        Não tem conta?
+        <router-link to="/register">Criar conta</router-link>
+      </p>
+    </div>
   </div>
 </template>

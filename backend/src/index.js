@@ -1,5 +1,6 @@
 import express from "express";
 import authRoutes from "./routes/auth.routes.js";
+import healthRoutes from "./routes/helthCheck.routes.js";
 
 const app = express();
 
@@ -8,6 +9,7 @@ app.use(express.json());
 
 // Rotas
 app.use(authRoutes);
+app.use("/api", healthRoutes);
 
 // Rota de teste
 app.get("/api", (req, res) => {
