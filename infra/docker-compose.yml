@@ -7,9 +7,10 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: gymdb
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    
 
   backend:
     build:
@@ -19,6 +20,10 @@ services:
       - "3000:3000"
     depends_on:
       - db
+    env_file:
+      - ../backend/.env.docker
+    
+
 
   frontend:
     build:

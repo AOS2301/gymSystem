@@ -1,8 +1,16 @@
 import express from "express";
+import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
 import healthRoutes from "./routes/helthCheck.routes.js";
 
+
 const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 
 // Middleware para ler JSON
 app.use(express.json());

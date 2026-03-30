@@ -9,22 +9,33 @@ const email = ref("");
 const senha = ref("");
 const router = useRouter();
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 async function cadastrar() {
-  if (!nome.value || !email.value || !senha.value) {
-    alert("Preencha todos os campos");
-    return;
-  }
-
   try {
-    loading.value = true;
+    const response = await fetch(`${API_URL}/cadastro`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nome: nome.value,
+        email: email.value,
+        senha: senha.value,
+      }),
+    });
 
-    const cadastro = await register(nome.value, email.value, senha.value);
 
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Erro ao cadastrar");
+    }
+
+    alert("Cadastro realizado com sucesso!");
     router.push("/Login");
   } catch (error) {
-    alert("E-mail ou senha inválidos");
-  } finally {
-    loading.value = false;
+    alert(error.message);
   }
 }
 </script>

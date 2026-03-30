@@ -1,29 +1,24 @@
+
+import { prisma } from "../database/prisma.js";
+
 export class UserRepository {
   static async findByEmail(email) {
-    // Simulação de banco
-    const users = [
-      {
-        id: 1,
-        nome: "Arthur",
-        email: "arthur@email.com",
-        senha: "123456",
-      },
-    ];
+    const user = await prisma.usuario.findUnique({
+      where: { email },
+    });
 
-    return users.find(user => user.email === email);
+    return user;
   }
 
-  static async findByEmail(email) {
-    // Simulação de banco
-    const users = [
-      {
-        id: 1,
-        nome: "Arthur",
-        email: "arthur@email.com",
-        senha: "123456",
+  static async create({ nome, email, senha }) {
+    const user = await prisma.usuario.create({
+      data: {
+        nome,
+        email,
+        senha,
       },
-    ];
+    });
 
-    return users.find(user => user.email === email);
+    return user;
   }
 }
