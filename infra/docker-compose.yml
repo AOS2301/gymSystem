@@ -4,10 +4,10 @@ services:
     container_name: postgres_db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: schmitz2301
       POSTGRES_DB: gymdb
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     
@@ -20,9 +20,6 @@ services:
       - "3000:3000"
     depends_on:
       - db
-    env_file:
-      - ../backend/.env.docker
-    
 
 
   frontend:
