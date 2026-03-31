@@ -1,28 +1,47 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { login } from "@/api/login.api.js";
+
+import "../assets/css/auth.css";
 
 const email = ref("");
 const senha = ref("");
+const errorMsg = ref("");
 const router = useRouter();
 const loading = ref(false);
 
-async function entrar() {
-  if (!email.value || !senha.value) {
-    alert("Preencha todos os campos");
-    return;
-  }
+const API_URL = import.meta.env.VITE_API_URL;
+
+async function login() {
+  loading.value = true;
+  errorMsg.value = "";
 
   try {
-    loading.value = true;
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email.value,
+        senha: senha.value,
+      }),
+    });
 
-    const resposta = await login(email.value, senha.value);
-    localStorage.setItem("token", resposta.token);
+    const data = await response.json();
 
+    if (!response.ok) {
+      errorMsg.value = "Credenciais inválidas";
+      email.value = "";
+      senha.value = "";
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
     router.push("/home");
   } catch (error) {
-    alert("E-mail ou senha inválidos");
+    errorMsg.value = error.message || "Erro ao fazer login";
+    statusMsg.value = "";
   } finally {
     loading.value = false;
   }
@@ -35,19 +54,11 @@ async function entrar() {
       <h1>Bem-vindo 👋</h1>
       <p class="subtitle">Faça login para continuar</p>
 
-      <input
-        type="email"
-        placeholder="E-mail"
-        v-model="email"
-      />
+      <input type="email" placeholder="E-mail" v-model="email" />
 
-      <input
-        type="password"
-        placeholder="Senha"
-        v-model="senha"
-      />
+      <input type="password" placeholder="Senha" v-model="senha" />
 
-      <button @click="entrar" :disabled="loading">
+      <button @click="login" :disabled="loading">
         <span v-if="loading">Entrando...</span>
         <span v-else>Entrar</span>
       </button>
@@ -56,6 +67,10 @@ async function entrar() {
         Não tem conta?
         <router-link to="/register">Criar conta</router-link>
       </p>
+
+      <div v-if="errorMsg" class="login-error">
+        <strong>Erro:</strong> {{ errorMsg }}
+      </div>
     </div>
   </div>
 </template>

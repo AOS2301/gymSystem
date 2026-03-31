@@ -15,17 +15,9 @@ export class AuthController {
     }
   }
 
-  static async cadastro(req, res) {
-    try {
-      const { nome, email, senha } = req.body;
-
-      const resultado = await AuthService.cadastro(nome, email, senha);
-
-      return res.status(200).json(resultado);
-    } catch (error) {
-      return res.status(401).json({
-        message: error.message,
+  static async me(req, res) {
+      return res.json({
+        user: req.user
       });
-    }
   }
 }

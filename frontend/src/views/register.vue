@@ -13,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 async function cadastrar() {
   try {
-    const response = await fetch(`${API_URL}/cadastro`, {
+    const response = await fetch(`${API_URL}/user/cadastro`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

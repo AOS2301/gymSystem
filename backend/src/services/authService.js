@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/UserRepository.js";
 import { UserDTO } from "../dto/UserDto.js";
+
 
 export class AuthService {
   static async login(email, senha) {
@@ -10,41 +12,26 @@ export class AuthService {
       throw new Error("Usuário não encontrado");
     }
 
-    if (user.senha !== senha) {
+    const senhaValida = await bcrypt.compare(senha, user.senha);
+
+    if (!senhaValida) {
       throw new Error("Senha inválida");
     }
+    
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || "1d"
+      }
+    );
 
-    // Exemplo simples (sem JWT ainda)
     return {
-      token: "token-exemplo-123",
+      token,
       user: new UserDTO(user),
     };
   }
-
-
-  static async cadastro(nome, email, senha) {
-    // 1. Verifica se já existe
-    const userExiste = await UserRepository.findByEmail(email);
-
-    if (userExiste) {
-      throw new Error("Usuário já cadastrado");
-    }
-
-    // 2. Criptografa a senha
-    const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
-    const senhaHash = await bcrypt.hash(senha, saltRounds);
-
-    // 3. Cria usuário no banco
-    const novoUser = await UserRepository.create({
-      nome,
-      email,
-      senha: senhaHash,
-    });
-
-    // 4. Retorna DTO (SEM senha)
-    return {
-      user: new UserDTO(novoUser),
-    };
-  }
-
 }

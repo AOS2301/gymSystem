@@ -1,169 +1,106 @@
-:root {
-  --bg: #0b0f14;
-  --sidebar: #0e141b;
-  --card: #131a22;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --accent: #a3e635;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Inter, system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-}
-
-/* Layout */
-.layout {
+/* Fundo */
+.home-container {
   display: flex;
   min-height: 100vh;
+  background: linear-gradient(135deg, #38b87c, #2f7f73);
+  font-family: "Inter", sans-serif;
 }
 
 /* Sidebar */
 .sidebar {
   width: 240px;
-  background: var(--sidebar);
+  background: #ffffff;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 .logo {
-  color: var(--accent);
-  font-weight: 700;
-  margin-bottom: 32px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #2f7f73;
+}
+
+.logo span {
+  color: #38b87c;
 }
 
 .nav-item {
-  display: block;
-  padding: 10px 12px;
-  border-radius: 8px;
-  color: var(--muted);
-  text-decoration: none;
-  margin-bottom: 8px;
+  margin-top: 16px;
+  color: #444;
+  cursor: pointer;
 }
 
-.nav-item.active,
-.nav-item:hover {
-  background: var(--card);
-  color: var(--text);
+.nav-item.active {
+  color: #38b87c;
+  font-weight: 600;
+}
+
+.logout {
+  margin-top: auto;
+  background: #e74c3c;
+  border: none;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 /* Conteúdo */
 .content {
   flex: 1;
-  padding: 32px;
+  padding: 40px;
 }
 
 .header h2 {
-  font-size: 26px;
-  margin: 0;
+  color: #fff;
 }
 
-.header h2 span {
-  color: var(--accent);
+.header span {
+  color: #c6ffe2;
 }
 
 .header p {
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-/* Grid */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 24px;
-  margin-top: 24px;
+  color: #e6f6f1;
 }
 
 /* Cards */
+.cards {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
 .card {
-  background: var(--card);
-  border-radius: 12px;
+  background: #fff;
+  border-radius: 10px;
   padding: 16px;
-  margin-bottom: 16px;
 }
 
 .card-header {
   font-weight: 600;
   margin-bottom: 12px;
+  color: #2f7f73;
 }
 
-.card-header strong {
-  color: var(--accent);
-  margin-right: 8px;
-}
-
-/* Tabela */
 .table-header,
 .table-row {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 8px;
   font-size: 14px;
 }
 
 .table-header {
-  color: var(--muted);
+  font-weight: bold;
   margin-bottom: 8px;
 }
 
-.table-row {
-  padding: 6px 0;
-}
-
-/* Adicionar */
 .add {
-  color: var(--accent);
   margin-top: 12px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-/* Timer */
-.timer {
-  background: var(--card);
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-}
-
-.timer-options {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.timer-options button {
-  background: #0b0f14;
-  color: var(--text);
+  background: none;
   border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.timer-options .active {
-  background: var(--accent);
-  color: #000;
-}
-
-.clock {
-  font-size: 32px;
-  margin: 16px 0;
-}
-
-.start {
-  background: var(--accent);
-  color: #000;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
+  color: #38b87c;
   font-weight: 600;
   cursor: pointer;
 }
