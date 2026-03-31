@@ -1,0 +1,2 @@
+//O git irá ignorar os arquivos listados abaixo, ou seja, não irá monitorar as mudanças nesses arquivos e não os incluirá no controle de versão.
+pgadmin.env
