@@ -12,6 +12,12 @@ const loading = ref(false);
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    login();
+  }
+});
+
 async function login() {
   loading.value = true;
   errorMsg.value = "";

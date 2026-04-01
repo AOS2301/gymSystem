@@ -17,37 +17,40 @@ model usuario {
   treinos treino[]
 }
 
+model exercicio {
+  id            Int     @id @default(autoincrement())
+  nome          String  @unique
+  descricao     String?
+
+  grupoMuscular String?
+  equipamento   String?
+
+  treinoExercicios treinoExercicio[]
+}
+
 model treino {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  diaSemana Int      // 1 = segunda, 7 = domingo
+  id        Int  @id @default(autoincrement())
+  diaSemana Int  // 1 = segunda, 7 = domingo
 
   usuarioId Int
   usuario   usuario @relation(fields: [usuarioId], references: [id])
 
-  atividades treinoAtividade[]
+  exercicios treinoExercicio[]
 }
 
-model atividade {
-  id        Int     @id @default(autoincrement())
-  nome      String
-  descricao String?
-
-  treinos treinoAtividade[]
-}
-
-model treinoAtividade {
+model treinoExercicio {
   id Int @id @default(autoincrement())
 
   treinoId    Int
-  atividadeId Int
+  exercicioId Int
 
-  series                 Int
-  repeticoes             Int
-  tempoDescansoSegundos  Int
+  series     Int
+  repeticoes Int
+  cargaKg    Float?
+  descanso   Int?
 
   treino    treino    @relation(fields: [treinoId], references: [id])
-  atividade atividade @relation(fields: [atividadeId], references: [id])
+  exercicio exercicio @relation(fields: [exercicioId], references: [id])
 
-  @@unique([treinoId, atividadeId])
+  @@unique([treinoId, exercicioId])
 }

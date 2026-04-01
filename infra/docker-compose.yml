@@ -26,11 +26,17 @@ services:
     build:
       context: ../backend
     container_name: backend
+    volumes:
+    - ../backend:/app
     ports:
       - "3000:3000"
     depends_on:
       - db
-
+    command: >
+      sh -c "
+      npx prisma migrate deploy &&
+      npm start
+      "
 
   frontend:
     build:

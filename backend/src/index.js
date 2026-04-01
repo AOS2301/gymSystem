@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import execRoutes from "./routes/exec.routes.js";
 import healthRoutes from "./routes/healthCheck.routes.js";
 
 
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // Rotas
 app.use("/user", userRoutes);
+app.use("/exec", execRoutes);
 app.use("/auth", authRoutes);
 app.use("/api", healthRoutes);
 
