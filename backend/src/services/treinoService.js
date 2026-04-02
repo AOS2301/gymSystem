@@ -1,4 +1,5 @@
 import { TreinoRepository } from "../repositories/TreinoRepository.js";
+import { TreinoExercicioRepository } from "../repositories/TreinoExercicioRepository.js";
 import { TreinoDTO } from "../dto/TreinosDto.js";
 
 
@@ -16,9 +17,10 @@ export class treinoService {
 
     if(treinos.length == 0) {
       const inclusaoTreinoDia = await TreinoRepository.create({ ...treinoData.diaId, userId });
+      treinoData.treinoId = inclusaoTreinoDia.id;
     }
 
-    const treino = await TreinoRepository.create({ ...treinoData, userId });
+    const treino = await TreinoExercicioRepository.create({ ...treinoData, userId });
 
     return {
       treino: new TreinoDTO(treino),

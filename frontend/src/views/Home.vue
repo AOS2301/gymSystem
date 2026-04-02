@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, computed  } from "vue";
+import { ref, reactive, onMounted, onUnmounted, computed  } from "vue";
 import { useRouter } from "vue-router";
 import "../assets/css/home.css";
 
@@ -84,10 +84,11 @@ const treinos = ref(
 
 const form = reactive({
   diaId: null,
+  exercicioId: null,
   exercicio: "",
   series: 3,
   reps: 10,
-  descanso: 2-3, // descanso em minutos
+  descanso: 2,
   peso: "",
 });
 
@@ -97,9 +98,10 @@ const nomeDiaSelecionado = computed(() => {
 });
 
 async function salvarTreino() {
-  const { exercicio, peso, series, reps, diaId } = form;
+  const { exercicioId, peso, series, reps, descanso, diaId } = form;
+  console.log("Exercício:", exercicioId);
 
-  if (!exercicio.trim() || !peso.trim() || !series || !reps) {
+  if (!exercicioId.trim() || !peso.trim() || !series || !reps || !descanso) {
     alert("Preencha todos os campos.");
     return;
   }
@@ -115,9 +117,10 @@ async function salvarTreino() {
       },
       body: JSON.stringify({
         diaId,
-        nome: exercicio,
+        exercicioId,
         series,
         reps,
+        descanso,
         peso,
       }),
     });
@@ -156,7 +159,6 @@ function fecharModal() {
   showModal.value = false;
 }
 
-
 function logout() {
   localStorage.removeItem("token");
   router.push("/login");
@@ -183,6 +185,7 @@ async function carregarExercicios() {
   exercises.value = await response.json();
 }
 
+//Apresentação dos exerc[icios no sistema]
 const showSuggestions = ref(false);
 
 const filteredExercises = computed(() => {
@@ -200,7 +203,8 @@ function onExerciseInput() {
 }
 
 function selectExercise(ex) {
-  form.exercicio = ex.nome;
+  this.form.exercicio = ex.nome 
+  this.form.exercicioId = ex.id;
   showSuggestions.value = false;
 }
 
@@ -254,7 +258,7 @@ function getFormInicial() {
 
             <div
               v-for="ex in dia.exercicios"
-              :key="ex.nome"
+              :key="ex.id"
               class="table-row"
             >
               <span>{{ ex.nome }}</span>
@@ -289,6 +293,7 @@ function getFormInicial() {
               type="text"
               class="autocomplete-input"
               @input="onExerciseInput"
+              @keydown.esc="showSuggestions = false"
               @focus="showSuggestions = true"
               @blur="setTimeout(() => (showSuggestions = false), 150)"
               placeholder="Digite nome do exercício"
@@ -297,7 +302,7 @@ function getFormInicial() {
             <ul v-if="showSuggestions && filteredExercises.length" class="autocomplete-list">
               <li
                 v-for="ex in filteredExercises"
-                :key="ex"
+                :key="ex.id"
                 class="autocomplete-item"
                 @mousedown.prevent="selectExercise(ex)"
               >

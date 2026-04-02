@@ -1,4 +1,4 @@
-import { treinoService } from "../services/treinoService.js";
+import { treinoService } from "../services/treinoService.js";`1`
 
 export class treinoController {
   static async listarTreinos(req, res) {
@@ -18,9 +18,9 @@ export class treinoController {
   static async incluirTreino(req, res) {
     try {
       const userId = req.user.id;
-      const { diaId, nome, series, reps, peso } = req.body;
+      const { diaId, exercicioId, series, reps, peso, descanso } = req.body;
 
-      const resultado = await treinoService.incluirTreino(userId, { diaId, nome, series, reps, peso });
+      const resultado = await treinoService.incluirTreino(userId, { diaId, exercicioId, series, reps, peso, descanso });
 
       return res.status(200).json(resultado);
     } catch (error) {
