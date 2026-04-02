@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
-import execRoutes from "./routes/exec.routes.js";
+import treinoRoutes from "./routes/treino.routes.js";
+import exeRoutes from "./routes/exe.routes.js";
 import healthRoutes from "./routes/healthCheck.routes.js";
 
 
@@ -18,9 +19,10 @@ app.use(cors({
 app.use(express.json());
 
 // Rotas
-app.use("/user", userRoutes);
-app.use("/exec", execRoutes);
 app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
+app.use("/treino", treinoRoutes);
+app.use("/exe", exeRoutes);
 app.use("/api", healthRoutes);
 
 // Rota de teste

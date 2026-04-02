@@ -1,9 +1,8 @@
 import { Router } from "express";
-import { execController } from "../controllers/execController.js";
+import { exeController } from "../controllers/exeController.js";
 import { authGuard } from "../guard/auth.guard.js";
 
 const router = Router();
 
-router.get("/treino", authGuard, execController.treinos);
-
+router.get("/exercicios", authGuard, exeController.listarExercicios);
 export default router;

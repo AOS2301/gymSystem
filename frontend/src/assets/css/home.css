@@ -203,6 +203,50 @@
   border-radius: 8px;
 }
 
+.autocomplete {
+  position: relative;
+}
+
+.autocomplete-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  color: #222;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #d8e8de;
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.autocomplete-item {
+  padding: 10px;
+  cursor: pointer;
+  color: #2c2c2c;
+  font-weight: 500;
+}
+
+.autocomplete-item:hover {
+  background: #f2fdf5;
+}
+
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;

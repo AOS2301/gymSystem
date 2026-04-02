@@ -6,8 +6,12 @@ import "../assets/css/home.css";
 const router = useRouter();
 const API_URL = import.meta.env.VITE_API_URL;
 
+const exercises = ref([]);
+const loadingExercises = ref(false);
+
+
 // ✅ onMounted substitui mounted()
-/*onMounted(async () => {
+onMounted(async () => {
   const token = localStorage.getItem("token");
 
   if (!token) {
@@ -36,7 +40,7 @@ async function carregarTreinos() {
   const token = localStorage.getItem("token");
 
   try {
-    const response = await fetch(`${API_URL}/exec/treino`, {
+    const response = await fetch(`${API_URL}/treino/treino`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -46,7 +50,7 @@ async function carregarTreinos() {
 
     const data = await response.json();
 
-    incluirTreinosNaUI(data);
+    //incluirTreinosNaUI(data);
     console.log("Treinos carregados:", data);
 
   } catch (error) {
@@ -58,7 +62,6 @@ function incluirTreinosNaUI(treinosData) {
   treinos.value = treinosData;
   treinos.value.sort((a, b) => a.id - b.id);
 }
-*/
 
 const showModal = ref(false);
 
@@ -84,6 +87,7 @@ const form = reactive({
   exercicio: "",
   series: 3,
   reps: 10,
+  descanso: 2-3, // descanso em minutos
   peso: "",
 });
 
@@ -103,7 +107,7 @@ async function salvarTreino() {
   const token = localStorage.getItem("token");
 
   try {
-    const response = await fetch(`${API_URL}/exec/incluirTreino`, {
+    const response = await fetch(`${API_URL}/treino/treino`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -158,12 +162,47 @@ function logout() {
   router.push("/login");
 }
 
-function openModal(diaId) {
+async function openModal(diaId) {
   Object.assign(form, getFormInicial());
   form.diaId = diaId;
   showModal.value = true;
+
+  await carregarExercicios();
 }
 
+async function carregarExercicios() {
+  if (exercises.value.length) {
+    console.log("Exercícios já carregados.");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${API_URL}/exe/exercicios`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  exercises.value = await response.json();
+}
+
+const showSuggestions = ref(false);
+
+const filteredExercises = computed(() => {
+  const query = form.exercicio.trim().toLowerCase();
+
+  if (!query) return exercises.value;
+
+  return exercises.value.filter(ex =>
+    ex.nome.toLowerCase().includes(query)
+  );
+});
+
+function onExerciseInput() {
+  showSuggestions.value = true;
+}
+
+function selectExercise(ex) {
+  form.exercicio = ex.nome;
+  showSuggestions.value = false;
+}
 
 function getFormInicial() {
   return {
@@ -244,13 +283,37 @@ function getFormInicial() {
           <div class="readonly-day">{{ nomeDiaSelecionado }}</div>
 
           <label>Exercício</label>
-          <input v-model="form.exercicio" type="text" />
+          <div class="autocomplete">
+            <input
+              v-model="form.exercicio"
+              type="text"
+              class="autocomplete-input"
+              @input="onExerciseInput"
+              @focus="showSuggestions = true"
+              @blur="setTimeout(() => (showSuggestions = false), 150)"
+              placeholder="Digite nome do exercício"
+            />
+
+            <ul v-if="showSuggestions && filteredExercises.length" class="autocomplete-list">
+              <li
+                v-for="ex in filteredExercises"
+                :key="ex"
+                class="autocomplete-item"
+                @mousedown.prevent="selectExercise(ex)"
+              >
+                {{ ex.nome }}
+              </li>
+            </ul>
+          </div>
 
           <label>Séries</label>
           <input v-model.number="form.series" type="number" min="1" />
 
-          <label>Reps</label>
+          <label>Repetições</label>
           <input v-model.number="form.reps" type="number" min="1" />
+
+          <label>Descanso</label>
+          <input v-model.number="form.descanso" type="number" min="1" />
 
           <label>Peso</label>
           <input v-model="form.peso" type="text" placeholder="ex: 60kg" />
