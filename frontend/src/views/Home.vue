@@ -1,3 +1,180 @@
+<script setup>
+import { ref, reactive, onMounted, computed  } from "vue";
+import { useRouter } from "vue-router";
+import "../assets/css/home.css";
+
+const router = useRouter();
+const API_URL = import.meta.env.VITE_API_URL;
+
+// ✅ onMounted substitui mounted()
+/*onMounted(async () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    logout();
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.status === 401) {
+      logout();
+      return;
+    }
+
+    await carregarTreinos();
+  } catch (err) {
+    console.error("Erro de autenticação", err);
+    logout();
+  }
+});
+
+async function carregarTreinos() {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${API_URL}/exec/treino`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) throw new Error("Erro ao buscar treinos");
+
+    const data = await response.json();
+
+    incluirTreinosNaUI(data);
+    console.log("Treinos carregados:", data);
+
+  } catch (error) {
+    console.error("Erro ao carregar treinos:", error);
+  }
+}
+
+function incluirTreinosNaUI(treinosData) {
+  treinos.value = treinosData;
+  treinos.value.sort((a, b) => a.id - b.id);
+}
+*/
+
+const showModal = ref(false);
+
+const DIAS_SEMANA = [
+  { id: 1, sigla: "SEG", nome: "Segunda" },
+  { id: 2, sigla: "TER", nome: "Terça" },
+  { id: 3, sigla: "QUA", nome: "Quarta" },
+  { id: 4, sigla: "QUI", nome: "Quinta" },
+  { id: 5, sigla: "SEX", nome: "Sexta" },
+  { id: 6, sigla: "SAB", nome: "Sábado" },
+  { id: 7, sigla: "DOM", nome: "Domingo" },
+];
+
+const treinos = ref(
+  DIAS_SEMANA.map(dia => ({
+    ...dia,
+    exercicios: [],
+  }))
+);
+
+const form = reactive({
+  diaId: null,
+  exercicio: "",
+  series: 3,
+  reps: 10,
+  peso: "",
+});
+
+const nomeDiaSelecionado = computed(() => {
+  const dia = DIAS_SEMANA.find(d => d.id === form.diaId);
+  return dia ? dia.nome : "";
+});
+
+async function salvarTreino() {
+  const { exercicio, peso, series, reps, diaId } = form;
+
+  if (!exercicio.trim() || !peso.trim() || !series || !reps) {
+    alert("Preencha todos os campos.");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${API_URL}/exec/incluirTreino`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        diaId,
+        nome: exercicio,
+        series,
+        reps,
+        peso,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Erro ao salvar treino");
+    }
+
+    const treinoSalvo = await response.json();
+
+    // ✅ Atualiza a UI APÓS sucesso do backend
+    const treinoDia = treinos.value.find(t => t.nome === dia);
+
+    treinoDia.exercicios.push({
+      nome: treinoSalvo.nome,
+      series: treinoSalvo.series,
+      reps: treinoSalvo.reps,
+      peso: treinoSalvo.peso,
+    });
+
+    ordenarTreinos();
+    fecharModal();
+    Object.assign(form, getFormInicial());
+
+  } catch (error) {
+    console.error(error);
+    alert("Não foi possível salvar o exercício.");
+  }
+}
+
+function ordenarTreinos() {
+  treinos.value.sort((a, b) => a.id - b.id);
+}
+
+function fecharModal() {
+  showModal.value = false;
+}
+
+
+function logout() {
+  localStorage.removeItem("token");
+  router.push("/login");
+}
+
+function openModal(diaId) {
+  Object.assign(form, getFormInicial());
+  form.diaId = diaId;
+  showModal.value = true;
+}
+
+
+function getFormInicial() {
+  return {
+    diaId: null,
+    exercicio: "",
+    series: 3,
+    reps: 10,
+    peso: "",
+  };
+}
+</script>
 <template>
   <div class="home-container">
     <!-- Sidebar -->
@@ -48,7 +225,7 @@
             </div>
           </div>
 
-          <button class="add" @click="openModal(dia.nome)">
+          <button class="add" @click="openModal(dia.id)">
             + Adicionar exercício
           </button>
         </div>
@@ -64,7 +241,7 @@
           <h3>Criar treino</h3>
 
           <label>Dia da semana</label>
-          <div class="readonly-day">{{ form.dia }}</div>
+          <div class="readonly-day">{{ nomeDiaSelecionado }}</div>
 
           <label>Exercício</label>
           <input v-model="form.exercicio" type="text" />
@@ -91,145 +268,3 @@
     </main>
   </div>
 </template>
-
-<script>
-import "../assets/css/home.css";
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-const DIAS_SEMANA = [
-  { sigla: "SEG", nome: "Segunda" },
-  { sigla: "TER", nome: "Terça" },
-  { sigla: "QUA", nome: "Quarta" },
-  { sigla: "QUI", nome: "Quinta" },
-  { sigla: "SEX", nome: "Sexta" },
-  { sigla: "SAB", nome: "Sábado" },
-  { sigla: "DOM", nome: "Domingo" },
-];
-
-const ORDEM_DIAS = DIAS_SEMANA.map(d => d.nome);
-
-export default {
-  data() {
-    return {
-      showModal: false,
-      form: this.getFormInicial(),
-      treinos: DIAS_SEMANA.map(dia => ({
-        ...dia,
-        exercicios: [],
-      })),
-    };
-  },
-
-
-  async mounted() {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      this.logout();
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.status === 401) {
-        this.logout();
-        return;
-      }
-      //Para pegar o usuario logado, caso queira usar as informações dele
-      //const user = await response.json();
-      await this.carregarTreinos();
-    } catch (err) {
-      console.error("Erro de autenticação", err);
-      this.logout();
-    }
-  },
-
-
-  methods: {
-    getFormInicial() {
-      return {
-        dia: "",
-        exercicio: "",
-        series: 3,
-        reps: 10,
-        peso: "",
-      };
-    },
-
-    logout() {
-      localStorage.removeItem("token");
-      this.$router.push("/login");
-    },
-
-    openModal(dia) {
-      this.form.dia = dia;
-      this.showModal = true;
-    },
-
-    fecharModal() {
-      this.showModal = false;
-    },
-    
-    async carregarTreinos() {
-      const token = localStorage.getItem("token");
-
-      try {
-        const response = await fetch(`${API_URL}/exec/treino`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Erro ao buscar treinos");
-        }
-
-        const data = await response.json();
-
-        if (data.length === 0) {
-          alert("Nenhum treino encontrado para este usuário. Por favor, adicione seus treinos.");
-        }
-
-        console.log("Treinos carregados:", data);
-        // this.mapearTreinos(data);
-
-      } catch (error) {
-        console.error("Erro ao carregar treinos:", error);
-      }
-    },
-
-    salvarTreino() {
-      const { exercicio, peso, series, reps, dia } = this.form;
-
-      if (!exercicio.trim() || !peso.trim() || !series || !reps) {
-        alert("Preencha todos os campos antes de salvar.");
-        return;
-      }
-
-      const treinoDia = this.treinos.find(t => t.nome === dia);
-
-      treinoDia.exercicios.push({
-        nome: exercicio.trim(),
-        series,
-        reps,
-        peso: peso.trim(),
-      });
-
-      this.ordenarTreinos();
-      this.fecharModal();
-      this.form = this.getFormInicial();
-    },
-
-    ordenarTreinos() {
-      this.treinos.sort(
-        (a, b) =>
-          ORDEM_DIAS.indexOf(a.nome) - ORDEM_DIAS.indexOf(b.nome)
-      );
-    },
-  },
-};
-</script>
