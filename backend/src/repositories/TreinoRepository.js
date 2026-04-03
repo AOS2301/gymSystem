@@ -20,29 +20,19 @@ export class TreinoRepository {
   }
 
   static async findByUserIdDiaId(userId, diaId) {
-    return prisma.treino.findMany({
+    return prisma.treino.findFirst({
       where: {
         usuarioId: userId,
-        diaId: diaId,
-      },
-      include: {
-        exercicios: {
-          include: {
-            exercicio: true,
-          },
-        },
-      },
-      orderBy: {
-        diaSemana: "asc",
-      },
+        diaSemana: diaId,
+      }
     });
   }
 
   static async create({ diaId, userId }) {
     const treino = await prisma.treino.create({
       data: {
-        diaId,
-        userId
+        usuarioId: userId,
+        diaSemana: diaId,
       },
     });
 
