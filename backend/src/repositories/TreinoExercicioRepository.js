@@ -1,17 +1,16 @@
 import { prisma } from "../database/prisma.js";
 
 export class TreinoExercicioRepository {
-    static async create({ treinoId, exercicioId, series, reps, peso }) {
+    static async create({ treino_id, exercicio_id, series, reps, descanso, peso }) {
         return prisma.treinoExercicio.create({
             data: {
-                treinoId,
-                exercicioId,
+                treino_id,
+                exercicio_id,
                 series,
                 repeticoes: reps,
-                cargaKg: peso,
                 descanso,
+                peso,
             }
         });
     }
-
 }

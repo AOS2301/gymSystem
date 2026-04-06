@@ -2,12 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Attach Backend (Docker)",
       "type": "node",
-      "request": "launch",
-      "name": "Debug Backend",
-      "program": "${workspaceFolder}/backend/src/index.js",
-      "cwd": "${workspaceFolder}/backend",
-      "console": "integratedTerminal",
+      "request": "attach",
+      "address": "localhost",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}/backend",
+      "remoteRoot": "/app",
+      "restart": true,
       "skipFiles": ["<node_internals>/**"]
     }
   ]

@@ -1,9 +1,10 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index",
+    "start": "node --inspect=0.0.0.0:9229 src/index.js",
     "dev": "nodemon src/index.js"
   },
   "prisma": {

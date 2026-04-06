@@ -18,7 +18,7 @@ export class treinoController {
   static async incluirTreino(req, res) {
     try {
       const userId = req.user.id;
-      const { diaId, exercicioId, series, reps, peso, descanso } = req.body;
+      const { diaId, exercicioId, series, reps, descanso, peso } = req.body;
 
       const resultado = await treinoService.incluirTreino(userId, { diaId, exercicioId, series, reps, peso, descanso });
 

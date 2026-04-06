@@ -25,10 +25,13 @@ services:
     build:
       context: ../backend
     container_name: backend
+    env_file:
+      - ../backend/.env
     volumes:
     - ../backend:/app
     ports:
       - "3000:3000"
+      - "9229:9229"   # 👈 DEBUG
     depends_on:
       - db
     command: >

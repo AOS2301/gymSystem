@@ -12,34 +12,30 @@ export class treinoService {
     };
   }
 
-
   static async incluirTreino(userId, treinoData) {
-    let treino = await TreinoRepository.findOneByUserAndDia(
+    let treino = await TreinoRepository.findByUserIdDiaId(
       userId,
       treinoData.diaId
     );
 
     if (!treino) {
       treino = await TreinoRepository.create({
-        usuarioId : userId,
-        diaSemana: treinoData.diaId,
+        usuario_id: userId,
+        dia_semana: treinoData.diaId,
       });
     }
 
     const treinoExercicio = await TreinoExercicioRepository.create({
-      userId,
-      treinoId: treino.id,
-      exercicioId: treinoData.exercicioId,
+      treino_id: treino.id,
+      exercicio_id: treinoData.exercicioId,
       series: treinoData.series,
       reps: treinoData.reps,
-      peso: treinoData.peso,
       descanso: treinoData.descanso,
+      peso: treinoData.peso,
     });
 
     return {
-      treino: new TreinoDTO(treinoExercicio),
+      treinoExercicio: new TreinoDTO(treinoExercicio),
     };
   }
-
-
 }

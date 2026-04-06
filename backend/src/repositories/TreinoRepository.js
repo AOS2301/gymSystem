@@ -4,7 +4,7 @@ export class TreinoRepository {
   static async findByUserId(userId) {
     return prisma.treino.findMany({
       where: {
-        usuarioId: userId,
+        usuario_Id: userId,
       },
       include: {
         exercicios: {
@@ -14,28 +14,39 @@ export class TreinoRepository {
         },
       },
       orderBy: {
-        diaSemana: "asc",
+        dia_semana: "asc",
       },
     });
   }
 
   static async findByUserIdDiaId(userId, diaId) {
-    return prisma.treino.findFirst({
-      where: {
-        usuarioId: userId,
-        diaSemana: diaId,
-      }
-    });
+    try {
+      const treino = await prisma.treino.findFirst({
+        where: {
+          usuario_id: Number(userId),
+          dia_semana: Number(diaId),
+        },
+      });
+      return treino;
+    } catch (error) {
+      console.error("Erro ao buscar treino:", error);
+      throw error;
+    }
   }
 
-  static async create({ diaId, userId }) {
-    const treino = await prisma.treino.create({
-      data: {
-        usuarioId: userId,
-        diaSemana: diaId,
-      },
-    });
 
-    return treino;
+  static async create({ usuario_id, dia_semana }) {
+    try {
+      const treino = await prisma.treino.create({
+        data: {
+          usuario_id,
+          dia_semana,
+        },
+      });
+      return treino;
+    } catch (error) {
+      console.error("Erro ao criar treino:", error);
+      throw error;
+    }
   }
 }

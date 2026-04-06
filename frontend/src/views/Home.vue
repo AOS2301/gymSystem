@@ -28,7 +28,6 @@ onMounted(async () => {
       logout();
       return;
     }
-
     await carregarTreinos();
   } catch (err) {
     console.error("Erro de autenticação", err);
@@ -99,7 +98,7 @@ const nomeDiaSelecionado = computed(() => {
 
 async function salvarTreino() {
   const { exercicioId, peso, series, reps, descanso, diaId } = form;
-  console.log("Exercício:", exercicioId);
+  console.log("dados do formulário:", form);
 
   if (!exercicioId.trim() || !peso.trim() || !series || !reps || !descanso) {
     alert("Preencha todos os campos.");
