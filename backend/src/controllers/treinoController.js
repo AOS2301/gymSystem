@@ -20,12 +20,12 @@ export class treinoController {
       const userId = req.user.id;
       const { diaId, exercicioId, series, reps, descanso, peso } = req.body;
 
-      const resultado = await treinoService.incluirTreino(userId, { diaId, exercicioId, series, reps, peso, descanso });
+      const resultado = await treinoService.incluirTreino(userId, { diaId, exercicioId, series, reps, descanso, peso });
 
       return res.status(200).json(resultado);
     } catch (error) {
       return res.status(500).json({
-        message: "Erro interno ao buscar treinos",
+        message: "Erro interno ao incluir treino",
       });
     }
   }

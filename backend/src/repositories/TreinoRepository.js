@@ -4,7 +4,7 @@ export class TreinoRepository {
   static async findByUserId(userId) {
     return prisma.treino.findMany({
       where: {
-        usuario_Id: userId,
+        usuario_id: Number(userId),
       },
       include: {
         exercicios: {

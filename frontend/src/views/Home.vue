@@ -7,8 +7,6 @@ const router = useRouter();
 const API_URL = import.meta.env.VITE_API_URL;
 
 const exercises = ref([]);
-const loadingExercises = ref(false);
-
 
 // ✅ onMounted substitui mounted()
 onMounted(async () => {
@@ -96,11 +94,13 @@ const nomeDiaSelecionado = computed(() => {
   return dia ? dia.nome : "";
 });
 
+
 async function salvarTreino() {
   const { exercicioId, peso, series, reps, descanso, diaId } = form;
+
   console.log("dados do formulário:", form);
 
-  if (!exercicioId.trim() || !peso.trim() || !series || !reps || !descanso) {
+  if (!exercicioId || !peso || !series || !reps || !descanso) {
     alert("Preencha todos os campos.");
     return;
   }
@@ -130,17 +130,17 @@ async function salvarTreino() {
 
     const treinoSalvo = await response.json();
 
-    // ✅ Atualiza a UI APÓS sucesso do backend
-    const treinoDia = treinos.value.find(t => t.nome === dia);
+    const treinoDia = treinos.value.find(t => t.id === diaId);
 
-    treinoDia.exercicios.push({
-      nome: treinoSalvo.nome,
-      series: treinoSalvo.series,
-      reps: treinoSalvo.reps,
-      peso: treinoSalvo.peso,
-    });
+    if (treinoDia) {
+      treinoDia.exercicios.push({
+        nome: treinoSalvo.nome,
+        series: treinoSalvo.series,
+        reps: treinoSalvo.reps,
+        peso: treinoSalvo.peso,
+      });
+    }
 
-    ordenarTreinos();
     fecharModal();
     Object.assign(form, getFormInicial());
 
@@ -320,7 +320,7 @@ function getFormInicial() {
           <input v-model.number="form.descanso" type="number" min="1" />
 
           <label>Peso</label>
-          <input v-model="form.peso" type="text" placeholder="ex: 60kg" />
+          <input v-model="form.peso" type="number" placeholder="ex: 60kg" />
 
           <div class="modal-actions">
             <button class="btn-secondary" @click="fecharModal">

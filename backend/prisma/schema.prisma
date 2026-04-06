@@ -22,10 +22,10 @@ model exercicio {
   nome          String  @unique
   descricao     String?
 
-  grupoMuscular String?
+  grupo_muscular String?
   equipamento   String?
 
-  treinoExercicios treinoExercicio[]
+  treino_exercicio treino_exercicio[]
 }
 
 model treino {
@@ -35,10 +35,10 @@ model treino {
   usuario_id  Int
   usuario     usuario @relation(fields: [usuario_id], references: [id])
 
-  exercicios  treinoExercicio[]
+  exercicios  treino_exercicio[]
 }
 
-model treinoExercicio {
+model treino_exercicio {
   id Int @id @default(autoincrement())
 
   treino_id    Int
