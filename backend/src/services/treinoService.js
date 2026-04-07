@@ -35,7 +35,7 @@ export class treinoService {
     });
 
     return {
-      treinoExercicio: new TreinoDTO(treinoExercicio),
+      treinoExercicio: new TreinoExercicioDTO(treinoExercicio),
     };
   }
 }

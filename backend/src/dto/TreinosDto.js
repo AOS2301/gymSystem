@@ -1,14 +1,15 @@
 export class TreinoDTO {
   constructor(treino) {
     this.id = treino.id;
-    this.diaSemana = treino.diaSemana;
-    this.exercicios = treino.exercicios.map(e => ({
-      id: e.exercicio.id,
-      nome: e.exercicio.nome,
-      series: e.series,
-      repeticoes: e.repeticoes,
-      carga: e.cargaKg,
-      descanso: e.descanso,
+    this.diaSemana = treino.dia_semana;
+
+    this.exercicios = treino.exercicios.map((te) => ({
+      exercicioId: te.exercicio_id,
+      nome: te.exercicio.nome,
+      series: te.series,
+      repeticoes: te.repeticoes,
+      peso: te.peso,
+      descanso: te.descanso,
     }));
   }
 }

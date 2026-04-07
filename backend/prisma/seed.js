@@ -1,7 +1,19 @@
 import { PrismaClient } from "@prisma/client";
-import exercicios from "./exercises-ptbr-minimal.json" assert { type: "json" };
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const prisma = new PrismaClient();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const exercicios = JSON.parse(
+  fs.readFileSync(
+    path.join(__dirname, "exercises-ptbr-minimal.json"),
+    "utf-8"
+  )
+);
 
 async function main() {
   console.log("🌱 Importando exercícios em português...");
@@ -10,7 +22,9 @@ async function main() {
     await prisma.exercicio.create({
       data: {
         nome: ex.name,
-        descricao: ex.instructions.join(" "),
+        descricao: Array.isArray(ex.instructions)
+          ? ex.instructions.join(" ")
+          : ex.instructions ?? "",
       },
     });
   }
@@ -20,4 +34,4 @@ async function main() {
 
 main()
   .catch(console.error)
-  .finally(() => prisma.$disconnect());
+  .finally(async () => prisma.$disconnect());

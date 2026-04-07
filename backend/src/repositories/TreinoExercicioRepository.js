@@ -19,4 +19,10 @@ export class TreinoExercicioRepository {
             throw error;
         }
     }
+    
+    static async findByTreinoId(treinoId) {
+        return prisma.treinoExercicio.findMany({
+            where: { treino_id: treinoId },
+        });
+    }
 }
