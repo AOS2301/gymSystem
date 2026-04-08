@@ -93,22 +93,18 @@ async function carregarTreinos() {
 
   // mapeia DTO → UI
   data.treinos.forEach(treino => {
-  const diaId = DIAS_SEMANA[treino.diaSemana];
+    const dia = treinos.value.find(d => d.id === treino.diaSemana);
+    if (!dia) return;
 
-  const dia = treinos.value.find(d => d.id === diaId);
-
-  if (!dia) return;
-
-  treino.exercicios.forEach(ex => {
-    dia.exercicios.push({
+    dia.exercicios = treino.exercicios.map(ex => ({
       nome: ex.nome,
       series: ex.series,
       repeticoes: ex.repeticoes,
       peso: ex.peso,
       descanso: ex.descanso,
-    });
+    }));
   });
-});
+
 }
 
 /* ===============================
@@ -121,7 +117,7 @@ async function salvarTreino() {
     diaId: form.diaId,
     exercicioId: form.exercicioId,
     series: form.series,
-    reps: form.repeticoes,
+    repeticoes: form.repeticoes,
     descanso: form.descanso,
     peso: Number(form.peso),
   };
@@ -140,20 +136,7 @@ async function salvarTreino() {
     return;
   }
 
-  const te = await response.json();
-
-  const exercicio = exercises.value.find(e => e.id === te.exercicioId);
-  const dia = treinos.value.find(d => d.id === form.diaId);
-
-  if (dia && exercicio) {
-    dia.exercicios.push({
-      nome: exercicio.nome,
-      series: te.series,
-      repeticoes: te.repeticoes,
-      peso: te.peso,
-      descanso: te.descanso,
-    });
-  }
+  await carregarTreinos();
 
   fecharModal();
   resetForm();
@@ -208,10 +191,10 @@ function logout() {
   <div class="home-container">
     <aside class="sidebar">
       <h1 class="logo">FIT<span>TRACKER</span></h1>
+      <button class="logout" @click="logout">Sair</button>
       <nav>
         <a class="nav-item active">Treinos da Semana</a>
       </nav>
-      <button class="logout" @click="logout">Sair</button>
     </aside>
 
     <main class="content">
@@ -234,9 +217,9 @@ function logout() {
               <span>Peso</span>
             </div>
 
-            <div
-              v-for="(ex, i) in dia.exercicios"
-              :key="i"
+            
+            <div v-for="ex in dia.exercicios" 
+              :key="ex.id" 
               class="table-row"
             >
               <span>{{ ex.nome }}</span>

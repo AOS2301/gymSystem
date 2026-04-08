@@ -1,14 +1,14 @@
 import { prisma } from "../database/prisma.js";
 
 export class TreinoExercicioRepository {
-    static async create({ treino_id, exercicio_id, series, reps, descanso, peso }) {
+    static async create({ treino_id, exercicio_id, series, repeticoes, descanso, peso }) {
         try {
             const treinoExercicio = await prisma.treino_exercicio.create({
                 data: {
                     treino_id,
                     exercicio_id,
                     series,
-                    repeticoes: reps,
+                    repeticoes,
                     descanso,
                     peso,
                 }

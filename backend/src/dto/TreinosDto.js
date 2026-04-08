@@ -4,6 +4,7 @@ export class TreinoDTO {
     this.diaSemana = treino.dia_semana;
 
     this.exercicios = treino.exercicios.map((te) => ({
+      id: te.id,
       exercicioId: te.exercicio_id,
       nome: te.exercicio.nome,
       series: te.series,

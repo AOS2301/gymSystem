@@ -1,6 +1,7 @@
 import { TreinoRepository } from "../repositories/TreinoRepository.js";
 import { TreinoExercicioRepository } from "../repositories/TreinoExercicioRepository.js";
 import { TreinoDTO } from "../dto/TreinosDto.js";
+import { TreinoExercicioDTO } from "../dto/TreinoExercicioDto.js";
 
 
 export class treinoService {
@@ -29,7 +30,7 @@ export class treinoService {
       treino_id: treino.id,
       exercicio_id: treinoData.exercicioId,
       series: treinoData.series,
-      reps: treinoData.reps,
+      repeticoes: treinoData.repeticoes,
       descanso: treinoData.descanso,
       peso: treinoData.peso,
     });
