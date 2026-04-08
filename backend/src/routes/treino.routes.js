@@ -6,5 +6,6 @@ const router = Router();
 
 router.get("/treino", authGuard, treinoController.listarTreinos);
 router.post("/treino", authGuard, treinoController.incluirTreino);
+router.delete("/treino", authGuard, treinoController.removerTreino);
 
 export default router;

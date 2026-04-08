@@ -29,4 +29,19 @@ export class treinoController {
       });
     }
   }
+
+  static async removerTreino(req, res) {
+    try {
+      const userId = req.user.id;
+      const { diaId, exercicioId } = req.body;
+
+      const resultado = await treinoService.removerTreino(userId, { diaId, exercicioId });
+
+      return res.status(200).json(resultado);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro interno ao remover treino",
+      });
+    }
+  }
 }

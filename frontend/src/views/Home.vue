@@ -104,7 +104,26 @@ async function carregarTreinos() {
       descanso: ex.descanso,
     }));
   });
+}
 
+async function removerExercicio(diaId, exercicioId) {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${API_URL}/treino/treino`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ diaId, exercicioId }),
+  });
+
+  if (!response.ok) {
+    alert("Erro ao remover exercício");
+    return;
+  }
+
+  await carregarTreinos();
 }
 
 /* ===============================
@@ -190,13 +209,14 @@ function logout() {
 <template>
   <div class="home-container">
     <aside class="sidebar">
-      <h1 class="logo">FIT<span>TRACKER</span></h1>
-      <button class="logout" @click="logout">Sair</button>
+      <div class="sidebar-top">
+        <h1 class="logo">FIT<span>TRACKER</span></h1>
+        <button class="logout" @click="logout">Sair</button>
+      </div>
       <nav>
         <a class="nav-item active">Treinos da Semana</a>
       </nav>
     </aside>
-
     <main class="content">
       <header class="header">
         <h2>Treinos da <span>Semana</span></h2>
@@ -214,7 +234,9 @@ function logout() {
               <span>Exercício</span>
               <span>Séries</span>
               <span>Reps</span>
+              <span>Intervalo</span>
               <span>Peso</span>
+              <span>Remover</span>
             </div>
 
             
@@ -225,7 +247,13 @@ function logout() {
               <span>{{ ex.nome }}</span>
               <span>{{ ex.series }}</span>
               <span>{{ ex.repeticoes }}</span>
-              <span>{{ ex.peso }}</span>
+              <span>{{ ex.descanso }} min</span>
+              <span>{{ ex.peso }} kg</span>
+              <span>
+                <button class="btn-remove" @click="removerExercicio(dia.id, ex.id)">
+                  Remover
+                </button>
+              </span>
             </div>
           </div>
 

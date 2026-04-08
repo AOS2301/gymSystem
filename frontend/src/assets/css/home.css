@@ -1,4 +1,6 @@
-/* Fundo */
+/* =========================================================
+   RESET / BASE
+========================================================= */
 .home-container {
   display: flex;
   min-height: 100vh;
@@ -6,11 +8,13 @@
   font-family: "Inter", sans-serif;
 }
 
-/* Sidebar */
+/* =========================================================
+   SIDEBAR
+========================================================= */
 .sidebar {
   width: 240px;
-  background: #ffffff;
   padding: 24px;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
 }
@@ -25,18 +29,20 @@
   flex-wrap: wrap;
 }
 
+/* Logo */
 .logo {
+  margin: 0;
+  min-width: 0;
   font-size: 22px;
   font-weight: bold;
   color: #2f7f73;
-  margin: 0;
-  min-width: 0;
 }
 
 .logo span {
   color: #38b87c;
 }
 
+/* Navegação */
 .nav-item {
   margin-top: 16px;
   color: #444;
@@ -48,24 +54,28 @@
   font-weight: 600;
 }
 
+/* Botão logout */
 .logout {
-  background: #e74c3c;
-  border: none;
-  color: #fff;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95rem;
   flex: 0 0 auto;
   min-width: auto;
+  padding: 8px 14px;
+  background: #e74c3c;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
 }
 
-/* Conteúdo */
+/* =========================================================
+   CONTEÚDO PRINCIPAL
+========================================================= */
 .content {
   flex: 1;
   padding: 40px;
 }
 
+/* Header */
 .header h2 {
   color: #fff;
 }
@@ -78,80 +88,128 @@
   color: #e6f6f1;
 }
 
-/* Cards */
+/* =========================================================
+   CARDS
+========================================================= */
 .cards {
-  margin-top: 24px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
+  margin-top: 24px;
   width: 100%;
 }
 
 .card {
+  width: 100%;
+  padding: 16px;
   background: #fff;
   border-radius: 10px;
-  padding: 16px;
-  width: 100%;
   box-sizing: border-box;
 }
 
-
-@media (max-width: 900px) {
-  .cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    overflow-x: hidden;
-    padding-bottom: 0;
-    background: transparent;
-  }
-
-  .card {
-    min-width: auto;
-    flex: auto;
-  }
-}
-
-@media (max-width: 900px) {
-  .cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    overflow-x: hidden;
-    padding-bottom: 0;
-  }
-
-  .card {
-    min-width: auto;
-    flex: auto;
-  }
-}
-
-
 .card-header {
-  font-weight: 600;
   margin-bottom: 12px;
+  font-weight: 600;
   color: #2f7f73;
 }
 
-.table-header,
-.table-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  font-size: 14px;
-  gap: 8px;
+/* =========================================================
+   CARD - TABELA DE EXERCÍCIOS
+========================================================= */
+.card-body {
+  margin-top: 12px;
 }
 
+/* Cabeçalho da tabela */
 .table-header {
-  font-weight: bold;
-  margin-bottom: 8px;
+  display: grid;
+  grid-template-columns: 
+    2.5fr  /* Exercício */
+    0.8fr  /* Séries */
+    0.8fr  /* Reps */
+    1fr    /* Intervalo */
+    0.8fr  /* Peso */
+    0.8fr; /* Remover */
+
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2f7f73;
+  border-bottom: 1px solid #e6f6f1;
+}
+
+/* Linha */
+.table-row {
+  display: grid;
+  grid-template-columns: 
+    2.5fr
+    0.8fr
+    0.8fr
+    1fr
+    0.8fr
+    0.8fr;
+
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #eaf3ef;
+}
+
+.table-row:last-child {
+  border-bottom: none;
 }
 
 .table-row span {
-  word-break: break-word;
-  white-space: normal;
+  color: #2d4f44;
 }
 
+/* =========================================================
+   TABELA DOS EXERCÍCIOS (6 COLUNAS)
+========================================================= */
+.table-header {
+  display: grid;
+  grid-template-columns:
+    2.5fr  /* Exercício */
+    1fr    /* Séries */
+    1fr    /* Reps */
+    1.2fr  /* Intervalo */
+    1fr    /* Peso */
+    0.9fr; /* Remover */
+
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2f7f73;
+  border-bottom: 1px solid #e6f6f1;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns:
+    2.5fr
+    1fr
+    1fr
+    1.2fr
+    1fr
+    0.9fr;
+
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #eaf3ef;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+/* =========================================================
+   BOTÕES
+========================================================= */
 .add {
   margin-top: 12px;
   background: none;
@@ -163,34 +221,58 @@
 
 .primary,
 .btn-primary {
+  padding: 10px 16px;
   background: #38b87c;
   border: none;
-  color: #fff;
-  padding: 10px 16px;
   border-radius: 8px;
+  color: #fff;
   cursor: pointer;
 }
 
 .btn-secondary {
+  margin-right: 8px;
+  padding: 10px 16px;
   background: #f0f0f0;
   border: 1px solid #ccc;
-  color: #333;
-  padding: 10px 16px;
   border-radius: 8px;
+  color: #333;
   cursor: pointer;
-  margin-right: 8px;
 }
 
 .create-workout {
   margin-top: 16px;
 }
 
+/* =========================================================
+   BOTÃO REMOVER EXERCÍCIO
+========================================================= */
+.btn-remove {
+  background: #fdf1f0;
+  border: 1px solid #f3b2ab;
+  color: #c0392b;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-remove:hover {
+  background: #fbe4e2;
+  border-color: #e74c3c;
+}
+
+.btn-remove:active {
+  transform: scale(0.96);
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -199,11 +281,11 @@
 }
 
 .modal {
+  width: min(92vw, 420px);
+  padding: 24px;
   background: #fff;
   border-radius: 12px;
-  padding: 24px;
-  width: min(92vw, 420px);
-  box-shadow: 0px 12px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -226,17 +308,26 @@
   border-radius: 8px;
 }
 
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* =========================================================
+   AUTOCOMPLETE
+========================================================= */
 .autocomplete {
   position: relative;
 }
 
 .autocomplete-input {
   width: 100%;
-  box-sizing: border-box;
+  padding: 10px;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 10px;
+  box-sizing: border-box;
   font-size: 14px;
   color: #222;
 }
@@ -246,44 +337,43 @@
   top: calc(100% + 4px);
   left: 0;
   right: 0;
+  z-index: 20;
   max-height: 180px;
   overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   background: #ffffff;
   border: 1px solid #d8e8de;
   border-radius: 8px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-  z-index: 20;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .autocomplete-item {
   padding: 10px;
-  cursor: pointer;
-  color: #2c2c2c;
   font-weight: 500;
+  color: #2c2c2c;
+  cursor: pointer;
 }
 
 .autocomplete-item:hover {
   background: #f2fdf5;
 }
 
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
-}
-
+/* =========================================================
+   CAMPOS ESPECIAIS
+========================================================= */
 .readonly-day {
+  margin-bottom: 8px;
   padding: 10px;
   background: #f4f4f4;
   border: 1px solid #dcdcdc;
   border-radius: 8px;
-  margin-bottom: 8px;
 }
 
+/* =========================================================
+   RESPONSIVO - TABLET / MOBILE
+========================================================= */
 @media (max-width: 900px) {
   .home-container {
     flex-direction: column;
@@ -302,10 +392,13 @@
   .cards {
     grid-template-columns: 1fr;
     gap: 12px;
+    overflow-x: hidden;
   }
 
   .card {
+    min-width: auto;
     padding: 14px;
+    flex: auto;
   }
 
   .header h2 {
@@ -329,7 +422,14 @@
   }
 }
 
+/* =========================================================
+   RESPONSIVO - MOBILE PEQUENO
+========================================================= */
 @media (max-width: 480px) {
+  .sidebar {
+    padding: 12px;
+  }
+
   .sidebar-top {
     flex-direction: column;
     align-items: stretch;
@@ -339,9 +439,6 @@
     align-self: flex-end;
     width: auto;
     margin-top: 8px;
-  }
-  .sidebar {
-    padding: 12px;
   }
 
   .content {
@@ -394,6 +491,12 @@
   }
 
   .table-row span:nth-child(4)::before {
+    content: "Descanso: ";
+    font-weight: 700;
+    color: #2f7f73;
+  }
+
+  .table-row span:nth-child(5)::before {
     content: "Peso: ";
     font-weight: 700;
     color: #2f7f73;
@@ -415,5 +518,3 @@
     box-sizing: border-box;
   }
 }
-
-
