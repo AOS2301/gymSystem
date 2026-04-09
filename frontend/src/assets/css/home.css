@@ -268,6 +268,30 @@
 }
 
 /* =========================================================
+   BOTÃO EDITAR EXERCÍCIO
+========================================================= */
+.btn-edit {
+  background: #f0f8f4;
+  border: 1px solid #a8d8c2;
+  color: #048a37;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit:hover {
+  background: #e1f0e8;
+  border-color: #048a37;
+}
+
+.btn-edit:active {
+  transform: scale(0.96);
+}
+
+/* =========================================================
    MODAL
 ========================================================= */
 .modal-overlay {

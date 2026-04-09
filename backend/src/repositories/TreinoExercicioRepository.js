@@ -28,7 +28,7 @@ export class TreinoExercicioRepository {
 
 
     static async delete(userId, diaId, exercicioId) {
-        return prisma.treinoExercicio.deleteMany({
+        return prisma.treino_exercicio.deleteMany({
             where: {
                 exercicio_id: exercicioId,
                 treino: {

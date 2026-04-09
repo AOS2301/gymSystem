@@ -12,6 +12,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const nomeUsuario = ref("");
 const modalAberto = ref(false);
 const sugestoesAbertas = ref(false);
+const editandoId = ref(null);
 
 /* ==================================================
    CATÁLOGO DE EXERCÍCIOS (autocomplete)
@@ -126,8 +127,6 @@ async function carregarTreinosSemana() {
       peso: te.peso,
       descanso: te.descanso,
     }));
-
-    console.log("Treino carregado para dia", diaUI.nome, diaUI.exercicios);
   });
 }
 
@@ -140,9 +139,9 @@ async function removerExercicioDoDia(diaSemanaId, exercicioId) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ 
-      diaId: diaSemanaId, 
-      exercicioId 
+    body: JSON.stringify({
+      diaId: diaSemanaId,
+      exercicioId
     }),
   });
 
@@ -152,6 +151,35 @@ async function removerExercicioDoDia(diaSemanaId, exercicioId) {
   }
 
   await carregarTreinosSemana();
+}
+
+function alterarExercicio(ex) {
+  editandoId.value = ex.id;
+}
+
+async function salvarEdicao(ex) {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${API_URL}/treino/treino/${ex.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      series: ex.series,
+      repeticoes: ex.repeticoes,
+      descanso: ex.descanso,
+      peso: Number(ex.peso),
+    }),
+  });
+
+  if (!response.ok) {
+    alert("Erro ao atualizar");
+    return;
+  }
+
+  editandoId.value = null;
 }
 
 /* ==================================================
@@ -253,11 +281,7 @@ function logout() {
       </header>
 
       <section class="cards">
-        <div
-          v-for="dia in treinosSemana"
-          :key="dia.id"
-          class="card"
-        >
+        <div v-for="dia in treinosSemana" :key="dia.id" class="card">
           <div class="card-header">
             <strong>{{ dia.sigla }}</strong> {{ dia.nome }}
           </div>
@@ -272,21 +296,34 @@ function logout() {
               <span></span>
             </div>
 
-            <div
-              v-for="ex in dia.exercicios"
-              :key="ex.exercicioId"
-              class="table-row"
-            >
+            <div v-for="ex in dia.exercicios" :key="ex.exercicioId" class="table-row">
               <span>{{ ex.nome }}</span>
-              <span>{{ ex.series }}</span>
-              <span>{{ ex.repeticoes }}</span>
-              <span>{{ ex.descanso }} min</span>
-              <span>{{ ex.peso }} kg</span>
+              <span v-if="editandoId === ex.id">
+                <input v-model.number="ex.series" type="number" />
+              </span>
+              <span v-else>{{ ex.series }}</span>
+              <span v-if="editandoId === ex.id">
+                <input v-model.number="ex.repeticoes" type="number" />
+              </span>
+              <span v-else>{{ ex.repeticoes }}</span>
+              <span v-if="editandoId === ex.id">
+                <input v-model.number="ex.descanso" type="number" />
+              </span>
+              <span v-else>{{ ex.descanso }} min</span>
+              <span v-if="editandoId === ex.id">
+                <input v-model="ex.peso" type="number" />
+              </span>
+              <span v-else>{{ ex.peso }} kg</span>
               <span>
-                <button
-                  class="btn-remove"
-                  @click="removerExercicioDoDia(dia.id, ex.exercicioId)"
-                >
+                <button v-if="editandoId !== ex.id" class="btn-edit" @click="alterarExercicio(ex)">
+                  Alterar
+                </button>
+
+                <button v-if="editandoId === ex.id" class="btn-save" @click="salvarEdicao(ex)">
+                  Salvar
+                </button>
+
+                <button class="btn-remove" @click="removerExercicioDoDia(dia.id, ex.exercicioId)">
                   Remover
                 </button>
               </span>
@@ -300,11 +337,7 @@ function logout() {
       </section>
 
       <!-- MODAL -->
-      <div
-        v-if="modalAberto"
-        class="modal-overlay"
-        @click.self="fecharModal"
-      >
+      <div v-if="modalAberto" class="modal-overlay" @click.self="fecharModal">
         <div class="modal">
           <h3>Incluir exercício</h3>
 
@@ -315,26 +348,13 @@ function logout() {
 
           <label>Exercício</label>
           <div class="autocomplete">
-            <input
-              v-model="formTreino.exercicioNome"
-              type="text"
-              class="autocomplete-input"
-              placeholder="Digite nome do exercício"
-              @input="onExerciseInput"
-              @keydown.esc="sugestoesAbertas = false"
-              @blur="setTimeout(() => (sugestoesAbertas = false), 150)"
-            />
+            <input v-model="formTreino.exercicioNome" type="text" class="autocomplete-input"
+              placeholder="Digite nome do exercício" @input="onExerciseInput" @keydown.esc="sugestoesAbertas = false"
+              @blur="setTimeout(() => (sugestoesAbertas = false), 150)" />
 
-            <ul
-              v-if="sugestoesAbertas && exerciciosFiltrados.length"
-              class="autocomplete-list"
-            >
-              <li
-                v-for="ex in exerciciosFiltrados"
-                :key="ex.id"
-                class="autocomplete-item"
-                @mousedown.prevent="selecionarExercicio(ex)"
-              >
+            <ul v-if="sugestoesAbertas && exerciciosFiltrados.length" class="autocomplete-list">
+              <li v-for="ex in exerciciosFiltrados" :key="ex.id" class="autocomplete-item"
+                @mousedown.prevent="selecionarExercicio(ex)">
                 {{ ex.nome }}
               </li>
             </ul>
@@ -350,11 +370,7 @@ function logout() {
           <input v-model.number="formTreino.descanso" type="number" min="1" />
 
           <label>Peso</label>
-          <input
-            v-model="formTreino.peso"
-            type="number"
-            placeholder="ex: 60"
-          />
+          <input v-model="formTreino.peso" type="number" placeholder="ex: 60" />
 
           <div class="modal-actions">
             <button class="btn-secondary" @click="fecharModal">

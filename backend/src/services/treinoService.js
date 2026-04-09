@@ -40,11 +40,11 @@ export class treinoService {
     };
   }
 
-  static async removerTreino(userId, treinoData) {
+  static async removerTreino(userId, data){
     const result = await TreinoExercicioRepository.delete(
       userId,
-      treinoData.diaId,
-      treinoData.exercicioId
+      data.diaId,
+      data.exercicioId
     );
 
     if (result.count === 0) {
