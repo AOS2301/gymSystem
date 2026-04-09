@@ -6,13 +6,21 @@ import "../assets/css/home.css";
 const router = useRouter();
 const API_URL = import.meta.env.VITE_API_URL;
 
-/* ===============================
-   ESTADO
-================================ */
-const exercises = ref([]);
-const showModal = ref(false);
-const showSuggestions = ref(false);
+/* ==================================================
+   ESTADO GLOBAL / UI
+================================================== */
+const nomeUsuario = ref("");
+const modalAberto = ref(false);
+const sugestoesAbertas = ref(false);
 
+/* ==================================================
+   CATÁLOGO DE EXERCÍCIOS (autocomplete)
+================================================== */
+const exerciciosCatalogo = ref([]);
+
+/* ==================================================
+   DIAS DA SEMANA (base fixa)
+================================================== */
 const DIAS_SEMANA = [
   { id: 1, sigla: "SEG", nome: "Segunda" },
   { id: 2, sigla: "TER", nome: "Terça" },
@@ -23,90 +31,107 @@ const DIAS_SEMANA = [
   { id: 7, sigla: "DOM", nome: "Domingo" },
 ];
 
-const treinos = ref(
+/* ==================================================
+   TREINOS DA SEMANA (UI)
+================================================== */
+const treinosSemana = ref(
   DIAS_SEMANA.map(dia => ({
     ...dia,
     exercicios: [],
   }))
 );
 
-/* ===============================
-   FORM
-================================ */
-const form = reactive({
-  diaId: null,
+/* ==================================================
+   FORMULÁRIO (modal)
+================================================== */
+const formTreino = reactive({
+  diaSemanaId: null,
   exercicioId: null,
-  exercicio: "",
+  exercicioNome: "",
   series: 3,
   repeticoes: 10,
   descanso: 2,
   peso: "",
 });
 
-/* ===============================
-   COMPUTED
-================================ */
+/* ==================================================
+   COMPUTEDS
+================================================== */
 const nomeDiaSelecionado = computed(() => {
-  const dia = DIAS_SEMANA.find(d => d.id === form.diaId);
+  const dia = DIAS_SEMANA.find(d => d.id === formTreino.diaSemanaId);
   return dia ? dia.nome : "";
 });
 
-const filteredExercises = computed(() => {
-  const query = form.exercicio.trim().toLowerCase();
-  if (!query) return exercises.value;
+const exerciciosFiltrados = computed(() => {
+  const termo = formTreino.exercicioNome.trim().toLowerCase();
+  if (!termo) return exerciciosCatalogo.value;
 
-  return exercises.value.filter(ex =>
-    ex.nome.toLowerCase().includes(query)
+  return exerciciosCatalogo.value.filter(ex =>
+    ex.nome.toLowerCase().includes(termo)
   );
 });
 
-/* ===============================
+/* ==================================================
    CICLO DE VIDA
-================================ */
+================================================== */
 onMounted(async () => {
-  await carregarExercicios();
-  await carregarTreinos();
+  nomeUsuario.value = localStorage.getItem("nome");
+
+  await carregarCatalogoExercicios();
+  await carregarTreinosSemana();
 });
 
-/* ===============================
-   API
-================================ */
-async function carregarExercicios() {
+/* ==================================================
+   API - EXERCÍCIOS
+================================================== */
+async function carregarCatalogoExercicios() {
   const token = localStorage.getItem("token");
+
   const response = await fetch(`${API_URL}/exe/exercicios`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  exercises.value = await response.json();
+
+  exerciciosCatalogo.value = await response.json();
 }
 
-async function carregarTreinos() {
+/* ==================================================
+   API - TREINOS
+================================================== */
+async function carregarTreinosSemana() {
   const token = localStorage.getItem("token");
+
   const response = await fetch(`${API_URL}/treino/treino`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
   const data = await response.json();
 
-  console.log("Treinos carregados:", data);
-  // limpa os dias
-  treinos.value.forEach(dia => (dia.exercicios = []));
+  // limpa UI
+  treinosSemana.value.forEach(dia => (dia.exercicios = []));
 
-  // mapeia DTO → UI
-  data.treinos.forEach(treino => {
-    const dia = treinos.value.find(d => d.id === treino.diaSemana);
-    if (!dia) return;
+  // mapeia API → UI
+  data.treinos.forEach(treinoApi => {
+    const diaUI = treinosSemana.value.find(
+      d => d.id === treinoApi.diaSemana
+    );
 
-    dia.exercicios = treino.exercicios.map(ex => ({
-      nome: ex.nome,
-      series: ex.series,
-      repeticoes: ex.repeticoes,
-      peso: ex.peso,
-      descanso: ex.descanso,
+    if (!diaUI) return;
+
+    diaUI.exercicios = treinoApi.exercicios.map(te => ({
+      id: te.id,
+      exercicioId: te.exercicioId,
+      nome: te.nome,
+      series: te.series,
+      repeticoes: te.repeticoes,
+      peso: te.peso,
+      descanso: te.descanso,
     }));
+
+    console.log("Treino carregado para dia", diaUI.nome, diaUI.exercicios);
   });
 }
 
-async function removerExercicio(diaId, exercicioId) {
+async function removerExercicioDoDia(diaSemanaId, exercicioId) {
   const token = localStorage.getItem("token");
 
   const response = await fetch(`${API_URL}/treino/treino`, {
@@ -115,7 +140,10 @@ async function removerExercicio(diaId, exercicioId) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ diaId, exercicioId }),
+    body: JSON.stringify({ 
+      diaId: diaSemanaId, 
+      exercicioId 
+    }),
   });
 
   if (!response.ok) {
@@ -123,22 +151,22 @@ async function removerExercicio(diaId, exercicioId) {
     return;
   }
 
-  await carregarTreinos();
+  await carregarTreinosSemana();
 }
 
-/* ===============================
+/* ==================================================
    MODAL
-================================ */
+================================================== */
 async function salvarTreino() {
   const token = localStorage.getItem("token");
 
   const payload = {
-    diaId: form.diaId,
-    exercicioId: form.exercicioId,
-    series: form.series,
-    repeticoes: form.repeticoes,
-    descanso: form.descanso,
-    peso: Number(form.peso),
+    diaId: formTreino.diaSemanaId,
+    exercicioId: formTreino.exercicioId,
+    series: formTreino.series,
+    repeticoes: formTreino.repeticoes,
+    descanso: formTreino.descanso,
+    peso: Number(formTreino.peso),
   };
 
   const response = await fetch(`${API_URL}/treino/treino`, {
@@ -155,44 +183,43 @@ async function salvarTreino() {
     return;
   }
 
-  await carregarTreinos();
-
+  await carregarTreinosSemana();
   fecharModal();
   resetForm();
 }
 
-function openModal(diaId) {
+function abrirModal(diaSemanaId) {
   resetForm();
-  form.diaId = diaId;
-  showModal.value = true;
+  formTreino.diaSemanaId = diaSemanaId;
+  modalAberto.value = true;
 }
 
 function fecharModal() {
-  showModal.value = false;
-  showSuggestions.value = false;
+  modalAberto.value = false;
+  sugestoesAbertas.value = false;
 }
 
-/* ===============================
+/* ==================================================
    AUTOCOMPLETE
-================================ */
+================================================== */
 function onExerciseInput() {
-  showSuggestions.value = true;
+  sugestoesAbertas.value = true;
 }
 
-function selectExercise(ex) {
-  form.exercicio = ex.nome;
-  form.exercicioId = ex.id;
-  showSuggestions.value = false;
+function selecionarExercicio(exercicio) {
+  formTreino.exercicioNome = exercicio.nome;
+  formTreino.exercicioId = exercicio.id;
+  sugestoesAbertas.value = false;
 }
 
-/* ===============================
-   UTILS
-================================ */
+/* ==================================================
+   UTILITÁRIOS
+================================================== */
 function resetForm() {
-  Object.assign(form, {
-    diaId: null,
+  Object.assign(formTreino, {
+    diaSemanaId: null,
     exercicioId: null,
-    exercicio: "",
+    exercicioNome: "",
     series: 3,
     repeticoes: 10,
     descanso: 2,
@@ -205,18 +232,20 @@ function logout() {
   router.push("/login");
 }
 </script>
-
 <template>
   <div class="home-container">
     <aside class="sidebar">
       <div class="sidebar-top">
         <h1 class="logo">FIT<span>TRACKER</span></h1>
+        <h1>{{ nomeUsuario }}</h1>
         <button class="logout" @click="logout">Sair</button>
       </div>
+
       <nav>
         <a class="nav-item active">Treinos da Semana</a>
       </nav>
     </aside>
+
     <main class="content">
       <header class="header">
         <h2>Treinos da <span>Semana</span></h2>
@@ -224,7 +253,11 @@ function logout() {
       </header>
 
       <section class="cards">
-        <div v-for="dia in treinos" :key="dia.id" class="card">
+        <div
+          v-for="dia in treinosSemana"
+          :key="dia.id"
+          class="card"
+        >
           <div class="card-header">
             <strong>{{ dia.sigla }}</strong> {{ dia.nome }}
           </div>
@@ -236,12 +269,12 @@ function logout() {
               <span>Reps</span>
               <span>Intervalo</span>
               <span>Peso</span>
-              <span>Remover</span>
+              <span></span>
             </div>
 
-            
-            <div v-for="ex in dia.exercicios" 
-              :key="ex.id" 
+            <div
+              v-for="ex in dia.exercicios"
+              :key="ex.exercicioId"
               class="table-row"
             >
               <span>{{ ex.nome }}</span>
@@ -250,52 +283,57 @@ function logout() {
               <span>{{ ex.descanso }} min</span>
               <span>{{ ex.peso }} kg</span>
               <span>
-                <button class="btn-remove" @click="removerExercicio(dia.id, ex.id)">
+                <button
+                  class="btn-remove"
+                  @click="removerExercicioDoDia(dia.id, ex.exercicioId)"
+                >
                   Remover
                 </button>
               </span>
             </div>
           </div>
 
-          <button class="add" @click="openModal(dia.id)">
+          <button class="add" @click="abrirModal(dia.id)">
             + Adicionar exercício
           </button>
         </div>
       </section>
 
-      <!-- Modal -->
+      <!-- MODAL -->
       <div
-        v-if="showModal"
+        v-if="modalAberto"
         class="modal-overlay"
         @click.self="fecharModal"
       >
         <div class="modal">
-          <h3>Criar treino</h3>
+          <h3>Incluir exercício</h3>
 
           <label>Dia da semana</label>
-          <div class="readonly-day">{{ nomeDiaSelecionado }}</div>
+          <div class="readonly-day">
+            {{ nomeDiaSelecionado }}
+          </div>
 
           <label>Exercício</label>
           <div class="autocomplete">
             <input
-              v-model="form.exercicio"
+              v-model="formTreino.exercicioNome"
               type="text"
               class="autocomplete-input"
               placeholder="Digite nome do exercício"
               @input="onExerciseInput"
-              @keydown.esc="showSuggestions = false"
-              @blur="setTimeout(() => (showSuggestions = false), 150)"
+              @keydown.esc="sugestoesAbertas = false"
+              @blur="setTimeout(() => (sugestoesAbertas = false), 150)"
             />
 
             <ul
-              v-if="showSuggestions && filteredExercises.length"
+              v-if="sugestoesAbertas && exerciciosFiltrados.length"
               class="autocomplete-list"
             >
               <li
-                v-for="ex in filteredExercises"
+                v-for="ex in exerciciosFiltrados"
                 :key="ex.id"
                 class="autocomplete-item"
-                @mousedown.prevent="selectExercise(ex)"
+                @mousedown.prevent="selecionarExercicio(ex)"
               >
                 {{ ex.nome }}
               </li>
@@ -303,16 +341,20 @@ function logout() {
           </div>
 
           <label>Séries</label>
-          <input v-model.number="form.series" type="number" min="1" />
+          <input v-model.number="formTreino.series" type="number" min="1" />
 
           <label>Repetições</label>
-          <input v-model.number="form.repeticoes" type="number" min="1" />
+          <input v-model.number="formTreino.repeticoes" type="number" min="1" />
 
           <label>Descanso</label>
-          <input v-model.number="form.descanso" type="number" min="1" />
+          <input v-model.number="formTreino.descanso" type="number" min="1" />
 
           <label>Peso</label>
-          <input v-model="form.peso" type="number" placeholder="ex: 60" />
+          <input
+            v-model="formTreino.peso"
+            type="number"
+            placeholder="ex: 60"
+          />
 
           <div class="modal-actions">
             <button class="btn-secondary" @click="fecharModal">

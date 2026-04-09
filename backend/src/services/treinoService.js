@@ -39,4 +39,18 @@ export class treinoService {
       treinoExercicio: new TreinoExercicioDTO(treinoExercicio),
     };
   }
+
+  static async removerTreino(userId, treinoData) {
+    const result = await TreinoExercicioRepository.delete(
+      userId,
+      treinoData.diaId,
+      treinoData.exercicioId
+    );
+
+    if (result.count === 0) {
+      throw new Error("Exercício não encontrado para este dia");
+    }
+
+    return { success: true };
+  }
 }

@@ -44,7 +44,9 @@ async function login() {
     }
 
     localStorage.setItem("token", data.token);
+    localStorage.setItem("nome", data.user.nome);
     console.log("Token armazenado:", data.token);
+    console.log("Nome armazenado:", data.user.nome);
     router.push("/home");
   } catch (error) {
     errorMsg.value = error.message || "Erro ao fazer login";
