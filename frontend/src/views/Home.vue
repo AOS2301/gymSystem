@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue";
 import { useRouter } from "vue-router";
 import "../assets/css/home.css";
 
@@ -13,6 +13,7 @@ const nomeUsuario = ref("");
 const modalAberto = ref(false);
 const sugestoesAbertas = ref(false);
 const editandoId = ref(null);
+const backupExercicio = ref(null);
 
 /* ==================================================
    CATÁLOGO DE EXERCÍCIOS (autocomplete)
@@ -119,7 +120,7 @@ async function carregarTreinosSemana() {
     if (!diaUI) return;
 
     diaUI.exercicios = treinoApi.exercicios.map(te => ({
-      id: te.id,
+      id: te.id, // treinoExercicioId
       exercicioId: te.exercicioId,
       nome: te.nome,
       series: te.series,
@@ -155,13 +156,16 @@ async function removerExercicioDoDia(diaSemanaId, exercicioId) {
 
 function alterarExercicio(ex) {
   editandoId.value = ex.id;
+
+  // faz uma cópia do estado original
+  backupExercicio.value = { ...ex };
 }
 
 async function salvarEdicao(ex) {
   const token = localStorage.getItem("token");
 
   const response = await fetch(`${API_URL}/treino/treino/${ex.id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -170,7 +174,7 @@ async function salvarEdicao(ex) {
       series: ex.series,
       repeticoes: ex.repeticoes,
       descanso: ex.descanso,
-      peso: Number(ex.peso),
+      peso: ex.peso,
     }),
   });
 
@@ -257,8 +261,23 @@ function resetForm() {
 
 function logout() {
   localStorage.removeItem("token");
+  localStorage.removeItem("nome");
   router.push("/login");
 }
+
+function cancelarEdicao(ex) {
+  if (!backupExercicio.value) return;
+
+  // restaura os valores
+  ex.series = backupExercicio.value.series;
+  ex.repeticoes = backupExercicio.value.repeticoes;
+  ex.descanso = backupExercicio.value.descanso;
+  ex.peso = backupExercicio.value.peso;
+
+  editandoId.value = null;
+  backupExercicio.value = null;
+}
+
 </script>
 <template>
   <div class="home-container">
@@ -314,14 +333,17 @@ function logout() {
                 <input v-model="ex.peso" type="number" />
               </span>
               <span v-else>{{ ex.peso }} kg</span>
-              <span>
+              <span class="actions">
                 <button v-if="editandoId !== ex.id" class="btn-edit" @click="alterarExercicio(ex)">
                   Alterar
                 </button>
-
                 <button v-if="editandoId === ex.id" class="btn-save" @click="salvarEdicao(ex)">
                   Salvar
                 </button>
+                <button v-if="editandoId === ex.id" class="btn-cancel" @click="cancelarEdicao(ex)">
+                  Cancelar
+                </button>
+
 
                 <button class="btn-remove" @click="removerExercicioDoDia(dia.id, ex.exercicioId)">
                   Remover

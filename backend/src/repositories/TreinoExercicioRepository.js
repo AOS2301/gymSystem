@@ -38,4 +38,13 @@ export class TreinoExercicioRepository {
             },
         });
     }
+
+    static async update(treinoId, data) {
+        return prisma.treino_exercicio.update({
+            where: {
+                id: treinoId
+            },
+            data: data
+        });
+    }
 }

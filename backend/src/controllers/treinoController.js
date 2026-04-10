@@ -1,4 +1,4 @@
-import { treinoService } from "../services/treinoService.js";`1`
+import { treinoService } from "../services/treinoService.js"; `1`
 
 export class treinoController {
   static async listarTreinos(req, res) {
@@ -41,6 +41,25 @@ export class treinoController {
     } catch (error) {
       return res.status(500).json({
         message: "Erro interno ao remover treino",
+      });
+    }
+  }
+
+  static async atualizarTreino(req, res) {
+    try {
+      const treinoId = Number(req.params.id);
+
+      const { series, repeticoes, descanso, peso } = req.body;
+
+      const resultado = await treinoService.atualizarTreino(
+        treinoId,
+        { series, repeticoes, descanso, peso }
+      );
+
+      return res.status(200).json(resultado);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro interno ao atualizar treino",
       });
     }
   }

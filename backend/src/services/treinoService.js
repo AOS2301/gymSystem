@@ -53,4 +53,19 @@ export class treinoService {
 
     return { success: true };
   }
+
+  static async atualizarTreino(treinoId, data){
+    try{
+      const result = await TreinoExercicioRepository.update(
+      treinoId,
+      data
+    );
+
+    return { success: true };
+
+    } catch (error) {
+      throw new Error("Falha ao atualizar treino: " + error.message);
+    }
+    
+  }
 }
