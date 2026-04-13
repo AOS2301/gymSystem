@@ -93,6 +93,18 @@ async function carregarCatalogoExercicios() {
     headers: { Authorization: `Bearer ${token}` },
   });
 
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("nome");
+    router.push("/login");
+    return;
+  }
+
+  if (!response.ok) {
+    console.error("Erro ao carregar catálogo:", response.status);
+    return;
+  }
+
   exerciciosCatalogo.value = await response.json();
 }
 
@@ -106,7 +118,20 @@ async function carregarTreinosSemana() {
     headers: { Authorization: `Bearer ${token}` },
   });
 
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("nome");
+    router.push("/login");
+    return;
+  }
+
+  if (!response.ok) {
+    console.error("Erro ao carregar treinos:", response.status);
+    return;
+  }
+
   const data = await response.json();
+  if (!data?.treinos) return;
 
   // limpa UI
   treinosSemana.value.forEach(dia => (dia.exercicios = []));
