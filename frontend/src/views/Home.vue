@@ -157,6 +157,11 @@ async function carregarTreinosSemana() {
 }
 
 async function removerExercicioDoDia(diaSemanaId, exercicioId) {
+  if (!confirm("Tem certeza que deseja remover este exercício?")) {
+    editandoId.value = null;
+    return;
+  }
+
   const token = localStorage.getItem("token");
 
   const response = await fetch(`${API_URL}/treino/treino`, {
@@ -308,7 +313,7 @@ function cancelarEdicao(ex) {
   <div class="home-container">
     <aside class="sidebar">
       <div class="sidebar-top">
-        <h1 class="logo">FIT<span>TRACKER</span></h1>
+        <h1 class="logo">Train<span>Hub</span></h1>
         <h1>{{ nomeUsuario }}</h1>
         <button class="logout" @click="logout">Sair</button>
       </div>
@@ -369,8 +374,7 @@ function cancelarEdicao(ex) {
                   Cancelar
                 </button>
 
-
-                <button class="btn-remove" @click="removerExercicioDoDia(dia.id, ex.exercicioId)">
+                <button v-if="editandoId !== ex.id" class="btn-remove" @click="removerExercicioDoDia(dia.id, ex.exercicioId)">
                   Remover
                 </button>
               </span>

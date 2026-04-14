@@ -12,21 +12,40 @@
    SIDEBAR
 ========================================================= */
 .sidebar {
-  width: 240px;
+  width: 200px;
   padding: 24px;
   background: #ffffff;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.sidebar.closed {
+  width: 20px;
+  padding: 24px;
+  background: #2d4f44;
+  overflow: hidden;
+}
+
+.sidebar.closed h1,
+.sidebar.closed .nav-item {
+  display: none;
 }
 
 .sidebar-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 26px;
+  padding-right: 13px;
   width: 100%;
   flex-wrap: wrap;
+}
+
+.toggle-btn {
+  font-size: 12px;
+  color: #f3f3f3;
+  cursor: pointer;
 }
 
 /* Logo */
@@ -54,6 +73,10 @@
   font-weight: 600;
 }
 
+
+/* =========================================================
+   CONTEÚDO PRINCIPAL
+========================================================= */
 /* Botão logout */
 .logout {
   flex: 0 0 auto;
@@ -67,11 +90,9 @@
   cursor: pointer;
 }
 
-/* =========================================================
-   CONTEÚDO PRINCIPAL
-========================================================= */
 .content {
   flex: 1;
+  transition: all 0.3s ease;
   padding: 40px;
 }
 
@@ -86,6 +107,17 @@
 
 .header p {
   color: #e6f6f1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
 }
 
 /* =========================================================
@@ -123,13 +155,19 @@
 /* Cabeçalho da tabela */
 .table-header {
   display: grid;
-  grid-template-columns: 
-    2.5fr  /* Exercício */
-    0.8fr  /* Séries */
-    0.8fr  /* Reps */
-    1fr    /* Intervalo */
-    0.8fr  /* Peso */
-    0.8fr; /* Remover */
+  grid-template-columns:
+    2.5fr
+    /* Exercício */
+    0.8fr
+    /* Séries */
+    0.8fr
+    /* Reps */
+    1fr
+    /* Intervalo */
+    0.8fr
+    /* Peso */
+    0.8fr;
+  /* Remover */
 
   gap: 12px;
   padding: 8px 0;
@@ -142,13 +180,8 @@
 /* Linha */
 .table-row {
   display: grid;
-  grid-template-columns: 
-    2.5fr
-    0.8fr
-    0.8fr
-    1fr
-    0.8fr
-    0.8fr;
+  grid-template-columns:
+    2.5fr 0.8fr 0.8fr 1fr 0.8fr 0.8fr;
 
   gap: 12px;
   align-items: center;
@@ -171,12 +204,18 @@
 .table-header {
   display: grid;
   grid-template-columns:
-    2.5fr  /* Exercício */
-    1fr    /* Séries */
-    1fr    /* Reps */
-    1.2fr  /* Intervalo */
-    1fr    /* Peso */
-    0.9fr; /* Remover */
+    2.5fr
+    /* Exercício */
+    1fr
+    /* Séries */
+    1fr
+    /* Reps */
+    1.2fr
+    /* Intervalo */
+    1fr
+    /* Peso */
+    0.9fr;
+  /* Remover */
 
   gap: 12px;
   padding: 8px 0;
@@ -189,12 +228,7 @@
 .table-row {
   display: grid;
   grid-template-columns:
-    2.5fr
-    1fr
-    1fr
-    1.2fr
-    1fr
-    0.9fr;
+    2.5fr 1fr 1fr 1.2fr 1fr 0.9fr;
 
   gap: 12px;
   align-items: center;
@@ -209,6 +243,13 @@
 
 .table-row:last-child {
   border-bottom: none;
+}
+
+.confirm-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
 }
 
 /* =========================================================
@@ -468,29 +509,31 @@
   }
 
   .sidebar-top {
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
-  }
-
-  .sidebar-top .logout {
-    align-self: flex-end;
-    width: auto;
-    margin-top: 8px;
   }
 
   .content {
     padding: 14px;
   }
 
-  .header h2 { font-size: 18px; }
-  .header p  { font-size: 12px; }
+  .header h2 {
+    font-size: 18px;
+  }
 
-  .table-header { display: none; }
+  .header p {
+    font-size: 12px;
+  }
+
+  .table-header {
+    display: none;
+  }
 
   /* Cada exercício em lista vertical */
   .table-row {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 3px;
     padding: 10px 0;
     border-bottom: 1px solid #e8f2ec;
@@ -501,7 +544,7 @@
   }
 
   /* Todos os spans em coluna, com label via ::before */
-  .table-row > span {
+  .table-row>span {
     display: flex;
     flex-direction: row;
     gap: 6px;
@@ -510,35 +553,56 @@
     justify-content: flex-start;
   }
 
-  .table-row > span::before {
+  .table-row>span::before {
     font-weight: 700;
     color: #2f7f73;
     min-width: 75px;
   }
 
-  .table-row > span:nth-child(1)::before { content: "Exercício:"; }
-  .table-row > span:nth-child(2)::before { content: "Séries:"; }
-  .table-row > span:nth-child(3)::before { content: "Reps:"; }
-  .table-row > span:nth-child(4)::before { content: "Descanso:"; }
-  .table-row > span:nth-child(5)::before { content: "Peso:"; }
+  .table-row>span:nth-child(1)::before {
+    content: "Exercício:";
+  }
+
+  .table-row>span:nth-child(2)::before {
+    content: "Séries:";
+  }
+
+  .table-row>span:nth-child(3)::before {
+    content: "Reps:";
+  }
+
+  .table-row>span:nth-child(4)::before {
+    content: "Descanso:";
+  }
+
+  .table-row>span:nth-child(5)::before {
+    content: "Peso:";
+  }
 
   /* Span de ações sem label e botões lado a lado */
-  .table-row > span.actions {
+  .table-row>span.actions {
     flex-direction: row;
     gap: 8px;
     margin-top: 6px;
   }
 
-  .table-row > span.actions::before { content: none; }
+  .table-row>span.actions::before {
+    content: none;
+  }
 
-  .table-row > span.actions button {
+  .table-row>span.actions button {
     flex: 1;
     font-size: 13px;
     padding: 7px;
   }
 
-  .card { padding: 16px; }
-  .card-header { font-size: 16px; }
+  .card {
+    padding: 16px;
+  }
+
+  .card-header {
+    font-size: 16px;
+  }
 
   .add,
   .btn-primary,
