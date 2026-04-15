@@ -48,61 +48,11 @@
 }
 
 /* =========================================================
-   SIDEBAR
-========================================================= */
-.sidebar {
-  width: 200px;
-  padding: 24px;
-  background: var(--color-surface);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
-}
-
-.sidebar-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 26px;
-  padding-right: 13px;
-  width: 100%;
-  flex-wrap: wrap;
-}
-
-.logo {
-  margin: 0;
-  font-size: 22px;
-  font-weight: bold;
-  color: var(--color-primary);
-}
-.logo span { color: var(--color-accent); }
-
-.nav-item {
-  margin-top: 16px;
-  color: var(--color-text-muted);
-  cursor: pointer;
-}
-.nav-item.active {
-  color: var(--color-accent);
-  font-weight: 600;
-}
-
-/* =========================================================
    CONTEÚDO PRINCIPAL
 ========================================================= */
-.logout {
-  padding: 8px 14px;
-  background: #e74c3c;
-  border: none;
-  border-radius: var(--radius-sm);
-  color: #fff;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-
 .content {
   flex: 1;
-  padding: 40px;
+  padding: 48px;
   transition: all 0.3s ease;
 }
 
@@ -373,13 +323,11 @@
 @media (max-width: 900px) {
   .home-container { flex-direction: column; }
 
-  .sidebar {
-    width: 100%;
-    padding: 16px;
-    border-bottom: 1px solid #e1e1e1;
+  .content {
+    padding: 20px;
+    margin-top: 58px; /* empurra abaixo da navbar fixa */
   }
 
-  .content { padding: 20px; }
   .header h2 { font-size: 20px; }
   .header p  { font-size: 14px; }
 
@@ -399,20 +347,27 @@
    RESPONSIVO — MOBILE
 ========================================================= */
 @media (max-width: 480px) {
-  .sidebar { padding: 12px; }
-  .sidebar-top { flex-direction: column; }
-  .content { padding: 14px; }
+  .home-container { flex-direction: column; }
+
+  .content {
+    padding: 14px;
+    margin-top: 58px; /* empurra abaixo da navbar fixa */
+  }
+
   .header h2 { font-size: 18px; }
   .header p  { font-size: 12px; }
 
+  .cards { gap: 12px; }
+  .card  { padding: 16px; }
+  .card-header { font-size: 16px; }
+
   .table-header { display: none; }
 
-  /* Linha vira coluna vertical */
   .table-row {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 3px;
+    gap: 4px;
     padding: 10px 0;
     border-bottom: 1px solid #e8f2ec;
   }
@@ -421,19 +376,20 @@
   .table-row > span {
     display: flex;
     flex-direction: row;
+    align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: var(--color-text);
-  }
-  .table-row > span::before {
-    font-weight: 700;
-    color: var(--color-label);
-    min-width: 75px;
+    width: 100%;
   }
 
-  /* Labels automáticos — ordem dos spans no template:
-     drag-handle(1) | nome(2) | séries(3) | reps(4) | descanso(5) | peso(6) | actions(7) */
-  .table-row > span:nth-child(1)::before { content: ""; }       /* drag handle — sem label */
+  .table-row > span::before {
+    font-weight: 700;
+    color: #2f7f73;
+    min-width: 80px;
+    text-align: left;
+  }
+
+  .table-row > span:nth-child(1)::before { content: ""; min-width: 0; }
   .table-row > span:nth-child(2)::before { content: "Exercício:"; }
   .table-row > span:nth-child(3)::before { content: "Séries:"; }
   .table-row > span:nth-child(4)::before { content: "Reps:"; }
@@ -444,12 +400,10 @@
     flex-direction: row;
     gap: 8px;
     margin-top: 6px;
+    flex-wrap: wrap;
   }
   .table-row > span.actions::before { content: none; }
-  .table-row > span.actions button  { flex: 1; font-size: 13px; padding: 7px; }
-
-  .card { padding: 16px; }
-  .card-header { font-size: 16px; }
+  .table-row > span.actions button { flex: 1; font-size: 13px; padding: 7px; }
 
   .add,
   .btn-primary,

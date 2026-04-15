@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import draggable from "vuedraggable";
+import NavBar from "./NavBar.vue";
 import "../assets/css/home.css";
 
 const router = useRouter();
@@ -306,20 +307,19 @@ function cancelarEdicao(ex) {
   editandoId.value = null;
   backupExercicio.value = null;
 }
+
+function toUpperCase(str) {
+  return str.toUpperCase();
+}   
 </script>
 
 <template>
   <div class="home-container">
-    <aside class="sidebar">
-      <div class="sidebar-top">
-        <h1 class="logo">Train<span>Hub</span></h1>
-        <h1>{{ nomeUsuario }}</h1>
-        <button class="logout" @click="logout">Sair</button>
-      </div>
-      <nav>
-        <a class="nav-item active">Treinos da Semana</a>
-      </nav>
-    </aside>
+    <NavBar
+      :nomeUsuario="nomeUsuario"
+      activeItem="treinos"
+      @logout="logout"
+    />
 
     <main class="content">
       <header class="header">
