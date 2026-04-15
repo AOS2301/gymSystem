@@ -48,9 +48,11 @@ model treino_exercicio {
   repeticoes Int
   peso    Float?
   descanso   Int?
+  ordem      Int
 
   treino    treino    @relation(fields: [treino_id], references: [id])
   exercicio exercicio @relation(fields: [exercicio_id], references: [id])
 
   @@unique([treino_id, exercicio_id])
+  @@index([treino_id, ordem])
 }

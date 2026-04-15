@@ -63,4 +63,24 @@ export class treinoController {
       });
     }
   }
+
+  static async reordenarTreinos(req, res) {
+    try {
+      const userId = req.user.id;
+      const { diaId } = req.params;
+      const { exercicios } = req.body;
+
+      const resultado = await treinoService.reordenarTreinos(
+        userId,
+        diaId,
+        exercicios
+      );
+
+      return res.status(200).json(resultado);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro interno ao reordenar treinos",
+      });
+    }
+  }
 }

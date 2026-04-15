@@ -8,5 +8,6 @@ router.get("/treino", authGuard, treinoController.listarTreinos);
 router.post("/treino", authGuard, treinoController.incluirTreino);
 router.delete("/treino", authGuard, treinoController.removerTreino);
 router.patch("/treino/:id", authGuard, treinoController.atualizarTreino);
+router.patch("/treino/:diaId/ordem", authGuard, treinoController.reordenarTreinos);
 
 export default router;

@@ -1,7 +1,24 @@
 import { prisma } from "../database/prisma.js";
 
 export class TreinoExercicioRepository {
-    static async create({ treino_id, exercicio_id, series, repeticoes, descanso, peso }) {
+
+    static async getMaiorOrdemByTreinoId(treinoId) {
+        const result = await prisma.treino_exercicio.aggregate({
+            where: { treino_id: treinoId },
+            _max: { ordem: true },
+        });
+
+        return result._max.ordem;
+    }
+
+    static async findIdsByTreinoId(treinoId) {
+        return prisma.treino_exercicio.findMany({
+            where: { treino_id: treinoId },
+            select: { id: true }
+        });
+    }
+
+    static async create({ treino_id, exercicio_id, series, repeticoes, descanso, peso, ordem }) {
         try {
             const treinoExercicio = await prisma.treino_exercicio.create({
                 data: {
@@ -11,6 +28,7 @@ export class TreinoExercicioRepository {
                     repeticoes,
                     descanso,
                     peso,
+                    ordem,
                 }
             });
             return treinoExercicio;
@@ -25,7 +43,6 @@ export class TreinoExercicioRepository {
             where: { treino_id: treinoId },
         });
     }
-
 
     static async delete(userId, diaId, exercicioId) {
         return prisma.treino_exercicio.deleteMany({
@@ -47,4 +64,16 @@ export class TreinoExercicioRepository {
             data: data
         });
     }
+
+    static async updateOrdemEmLote(exercicios) {
+        return prisma.$transaction(
+            exercicios.map(e =>
+                prisma.treino_exercicio.update({
+                    where: { id: e.treinoExercicioId },
+                    data: { ordem: e.ordem }
+                })
+            )
+        );
+    }
+
 }
