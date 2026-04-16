@@ -8,7 +8,8 @@ export class TreinoDTO {
       exercicioId: te.exercicio_id,
       nome: te.exercicio.nome,
       series: te.series,
-      repeticoes: te.repeticoes,
+      repeticoes_min: te.repeticoes_min,
+      repeticoes_max: te.repeticoes_max,
       peso: te.peso,
       descanso: te.descanso,
     }));

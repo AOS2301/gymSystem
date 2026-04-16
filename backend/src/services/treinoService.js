@@ -38,7 +38,8 @@ export class treinoService {
       treino_id: treino.id,
       exercicio_id: treinoData.exercicioId,
       series: treinoData.series,
-      repeticoes: treinoData.repeticoes,
+      repeticoes_min: treinoData.repeticoes_min,
+      repeticoes_max: treinoData.repeticoes_max,
       descanso: treinoData.descanso,
       peso: treinoData.peso,
       ordem: novaOrdem

@@ -18,14 +18,15 @@ export class TreinoExercicioRepository {
         });
     }
 
-    static async create({ treino_id, exercicio_id, series, repeticoes, descanso, peso, ordem }) {
+    static async create({ treino_id, exercicio_id, series, repeticoes_min, repeticoes_max, descanso, peso, ordem }) {
         try {
             const treinoExercicio = await prisma.treino_exercicio.create({
                 data: {
                     treino_id,
                     exercicio_id,
                     series,
-                    repeticoes,
+                    repeticoes_min,
+                    repeticoes_max,
                     descanso,
                     peso,
                     ordem,

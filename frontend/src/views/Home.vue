@@ -16,6 +16,7 @@ const modalAberto = ref(false);
 const sugestoesAbertas = ref(false);
 const editandoId = ref(null);
 const backupExercicio = ref(null);
+const descansoEmMinutos = ref(true);
 
 /* ==================================================
    CATÁLOGO DE EXERCÍCIOS (autocomplete)
@@ -53,7 +54,8 @@ const formTreino = reactive({
   exercicioId: null,
   exercicioNome: "",
   series: 3,
-  repeticoes: 10,
+  repeticoes_min: 10,
+  repeticoes_max: 15,
   descanso: 2,
   peso: "",
 });
@@ -129,7 +131,8 @@ async function carregarTreinosSemana() {
       exercicioId: te.exercicioId,
       nome: te.nome,
       series: te.series,
-      repeticoes: te.repeticoes,
+      repeticoes_min: te.repeticoes_min,
+      repeticoes_max: te.repeticoes_max,
       peso: te.peso,
       descanso: te.descanso,
       ordem: te.ordem ?? index,
@@ -164,6 +167,11 @@ function alterarExercicio(ex) {
 }
 
 async function salvarEdicao(ex) {
+  if (!validarRepeticoes(ex.repeticoes_min, ex.repeticoes_max)) {
+    alert("Repetições mínimas não podem ser maiores que as Repetições máximas");
+    return;
+  }
+
   const token = localStorage.getItem("token");
   const response = await fetch(`${API_URL}/treino/treino/${ex.id}`, {
     method: "PATCH",
@@ -173,7 +181,8 @@ async function salvarEdicao(ex) {
     },
     body: JSON.stringify({
       series: ex.series,
-      repeticoes: ex.repeticoes,
+      repeticoes_min: ex.repeticoes_min,
+      repeticoes_max: ex.repeticoes_max,
       descanso: ex.descanso,
       peso: ex.peso,
     }),
@@ -223,13 +232,22 @@ async function onDragEnd(dia) {
    MODAL
 ================================================== */
 async function salvarTreino() {
+  if (!validarRepeticoes(formTreino.repeticoes_min, formTreino.repeticoes_max)) {
+    alert("Repetições mínimas não podem ser maiores que as Repetições máximas");
+    return;
+  }
+  const descansoFinal = descansoEmMinutos.value
+    ? formTreino.descanso * 60
+    : formTreino.descanso;
+
   const token = localStorage.getItem("token");
   const payload = {
     diaId: formTreino.diaSemanaId,
     exercicioId: formTreino.exercicioId,
     series: formTreino.series,
-    repeticoes: formTreino.repeticoes,
-    descanso: formTreino.descanso,
+    repeticoes_min: formTreino.repeticoes_min,
+    repeticoes_max: formTreino.repeticoes_max,
+    descanso: descansoFinal,
     peso: Number(formTreino.peso),
   };
 
@@ -243,7 +261,6 @@ async function salvarTreino() {
   });
 
   if (!response.ok) { alert("Erro ao salvar exercício"); return; }
-
   await carregarTreinosSemana();
   fecharModal();
   resetForm();
@@ -251,6 +268,7 @@ async function salvarTreino() {
 
 function abrirModal(diaSemanaId) {
   resetForm();
+  descansoEmMinutos.value = true;
   formTreino.diaSemanaId = diaSemanaId;
   modalAberto.value = true;
 }
@@ -282,7 +300,8 @@ function resetForm() {
     exercicioId: null,
     exercicioNome: "",
     series: 3,
-    repeticoes: 10,
+    repeticoes_min: 10,
+    repeticoes_max: 15,
     descanso: 2,
     peso: "",
   });
@@ -301,7 +320,8 @@ function logout() {
 function cancelarEdicao(ex) {
   if (!backupExercicio.value) return;
   ex.series = backupExercicio.value.series;
-  ex.repeticoes = backupExercicio.value.repeticoes;
+  ex.repeticoes_min = backupExercicio.value.repeticoes_min;
+  ex.repeticoes_max = backupExercicio.value.repeticoes_max;
   ex.descanso = backupExercicio.value.descanso;
   ex.peso = backupExercicio.value.peso;
   editandoId.value = null;
@@ -311,6 +331,10 @@ function cancelarEdicao(ex) {
 function toUpperCase(str) {
   return str.toUpperCase();
 }   
+
+function validarRepeticoes(min, max) {
+  return min <= max;
+}
 </script>
 
 <template>
@@ -320,7 +344,6 @@ function toUpperCase(str) {
       activeItem="treinos"
       @logout="logout"
     />
-
     <main class="content">
       <header class="header">
         <h2>Treinos da <span>Semana</span></h2>
@@ -362,14 +385,22 @@ function toUpperCase(str) {
                   <span v-else>{{ ex.series }}</span>
 
                   <span v-if="editandoId === ex.id">
-                    <input v-model.number="ex.repeticoes" type="number" />
+                    <input v-model.number="ex.repeticoes_min" type="number" />
+                    <input v-model.number="ex.repeticoes_max" type="number" />
                   </span>
-                  <span v-else>{{ ex.repeticoes }}</span>
+                  <span v-else>
+                    {{ ex.repeticoes_min }} - {{ ex.repeticoes_max }}
+                  </span>
 
                   <span v-if="editandoId === ex.id">
                     <input v-model.number="ex.descanso" type="number" />
                   </span>
-                  <span v-else>{{ ex.descanso }} min</span>
+                  <span v-else>
+                    {{ ex.descanso >= 60
+                      ? (ex.descanso / 60) + " min"
+                    : ex.descanso + " seg"
+                    }}
+                  </span>
 
                   <span v-if="editandoId === ex.id">
                     <input v-model="ex.peso" type="number" />
@@ -439,20 +470,28 @@ function toUpperCase(str) {
           </div>
 
           <label>Séries</label>
-          <input v-model.number="formTreino.series" type="number" min="1" />
+          <input v-model.number="formTreino.series" type="number"/>
 
           <label>Repetições</label>
-          <input v-model.number="formTreino.repeticoes" type="number" min="1" />
+          <div class="reps-container">
+            <input class="reps-input" v-model.number="formTreino.repeticoes_min" type="number" />
+            <input class="reps-input" v-model.number="formTreino.repeticoes_max" type="number" />
+          </div>
 
           <label>Descanso</label>
-          <input v-model.number="formTreino.descanso" type="number" min="1" />
+          <div class="descanso-container">
+            <input v-model.number="formTreino.descanso" type="number" class="descanso-input" />
+            <button type="button" class="toggle-unidade" @click="descansoEmMinutos = !descansoEmMinutos">
+              {{ descansoEmMinutos ? "min" : "seg" }}
+            </button>
+          </div>
 
           <label>Peso</label>
           <input v-model="formTreino.peso" type="number" placeholder="ex: 60" />
 
           <div class="modal-actions">
             <button class="btn-secondary" @click="fecharModal">Cancelar</button>
-            <button class="btn-primary" @click="salvarTreino">Salvar</button>
+            <button class="btn-primary" @click="salvarTreino" :disabled="formTreino.repeticoes_min > formTreino.repeticoes_max">Salvar</button>
           </div>
         </div>
       </div>

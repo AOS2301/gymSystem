@@ -18,9 +18,9 @@ export class treinoController {
   static async incluirTreino(req, res) {
     try {
       const userId = req.user.id;
-      const { diaId, exercicioId, series, repeticoes, descanso, peso } = req.body;
+      const { diaId, exercicioId, series, repeticoes_min, repeticoes_max, descanso, peso } = req.body;
 
-      const resultado = await treinoService.incluirTreino(userId, { diaId, exercicioId, series, repeticoes, descanso, peso });
+      const resultado = await treinoService.incluirTreino(userId, { diaId, exercicioId, series, repeticoes_min, repeticoes_max, descanso, peso });
 
       return res.status(200).json(resultado);
     } catch (error) {
@@ -49,11 +49,11 @@ export class treinoController {
     try {
       const treinoId = Number(req.params.id);
 
-      const { series, repeticoes, descanso, peso } = req.body;
+      const { series, repeticoes_min, repeticoes_max, descanso, peso } = req.body;
 
       const resultado = await treinoService.atualizarTreino(
         treinoId,
-        { series, repeticoes, descanso, peso }
+        { series, repeticoes_min, repeticoes_max, descanso, peso }
       );
 
       return res.status(200).json(resultado);

@@ -17,6 +17,7 @@ const router = useRouter();
 
 const navItems = [
     { key: "treinos", label: "Treinos da Semana" },
+    { key: "dieta", label: "Dieta da Semana" },
     // Adicione futuros itens aqui
 ];
 

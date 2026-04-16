@@ -45,7 +45,8 @@ model treino_exercicio {
   exercicio_id Int
 
   series     Int
-  repeticoes Int
+  repeticoes_min Int
+  repeticoes_max Int
   peso    Float?
   descanso   Int?
   ordem      Int
