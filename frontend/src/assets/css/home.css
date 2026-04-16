@@ -1,6 +1,15 @@
 /* =========================================================
    VARIÁVEIS / TOKENS
 ========================================================= */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 :root {
   --color-primary: #2f7f73;
   --color-accent: #38b87c;
@@ -43,6 +52,7 @@
 ========================================================= */
 .home-container {
   display: flex;
+  width: 100%;
   min-height: 100vh;
   background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
 }
@@ -278,6 +288,21 @@
   text-align: left;
 }
 
+.reps-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reps-edit input {
+  width: 55px;
+  text-align: center;
+}
+
+.reps-edit .sep {
+  font-weight: bold;
+}
+
 .descanso-container {
   display: flex;
   align-items: center;
@@ -354,8 +379,8 @@
   .home-container { flex-direction: column; }
 
   .content {
-    padding: 20px;
-    margin-top: 58px; /* empurra abaixo da navbar fixa */
+    margin-top: 58px;
+    padding-top: 16px;
   }
 
   .header h2 { font-size: 20px; }

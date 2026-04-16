@@ -384,14 +384,15 @@ function validarRepeticoes(min, max) {
                   </span>
                   <span v-else>{{ ex.series }}</span>
 
-                  <span v-if="editandoId === ex.id">
+                  <span v-if="editandoId === ex.id" class="reps-edit">
                     <input v-model.number="ex.repeticoes_min" type="number" />
+                    <span class="sep">-</span>
                     <input v-model.number="ex.repeticoes_max" type="number" />
                   </span>
                   <span v-else>
                     {{ ex.repeticoes_min }} - {{ ex.repeticoes_max }}
                   </span>
-
+                  
                   <span v-if="editandoId === ex.id">
                     <input v-model.number="ex.descanso" type="number" />
                   </span>

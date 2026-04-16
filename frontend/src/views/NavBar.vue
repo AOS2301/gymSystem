@@ -1,5 +1,12 @@
 <script setup>
+import { ref } from "vue";
 import { useRouter } from "vue-router";
+
+const menuAberto = ref(false);
+
+function toggleMenu() {
+    menuAberto.value = !menuAberto.value;
+}
 
 const props = defineProps({
     nomeUsuario: {
@@ -31,9 +38,12 @@ function logout() {
             <h1 class="logo">Train<span>Hub</span></h1>
             <h1 class="usuario">{{ nomeUsuario.toUpperCase() }}</h1>
             <button class="logout" @click="logout">Sair</button>
+            <button class="menu-toggle" @click="toggleMenu">
+                ☰
+            </button>
         </div>
 
-        <nav>
+        <nav :class="{ open: menuAberto }">
             <a v-for="item in navItems" :key="item.key" class="nav-item" :class="{ active: activeItem === item.key }">
                 {{ item.label }}
             </a>
@@ -55,7 +65,6 @@ function logout() {
 .sidebar-top {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     gap: 12px;
     width: 100%;
     flex-wrap: wrap;
@@ -114,94 +123,152 @@ nav {
     cursor: pointer;
 }
 
+.menu-toggle {
+    color: #38b87c;
+    display: none;
+}
+
+.menu-toggle:hover {
+    background: rgba(47, 127, 115, 0.08);
+    border-radius: 6px;
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
+}
+
+
 /* Responsivo — tablet */
 @media (max-width: 900px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    min-width: unset;
-    z-index: 100;
-    padding: 10px 20px;
-    border-bottom: 1px solid #d0e8df;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        min-width: unset;
+        z-index: 100;
+        padding: 10px 20px;
+        border-bottom: 1px solid #d0e8df;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
 
-  .sidebar-top {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
+    .sidebar-top {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
 
-  .logo { font-size: 20px; }
+    .logo {
+        font-size: 20px;
+    }
 
-  .sidebar-top .usuario {
-    font-size: 12px;
-    flex: 1;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+    .sidebar-top .usuario {
+        font-size: 12px;
+        flex: 1;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
-  .logout {
-    width: auto;
-    padding: 6px 10px;
-    margin-top: 0;
-    white-space: nowrap;
-    font-size: 12px;
-  }
+    .logout {
+        width: auto;
+        padding: 6px 10px;
+        margin-top: 0;
+        white-space: nowrap;
+        font-size: 12px;
+    }
 
-  nav { display: none; }
+    .actions-top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        padding: 6px;
+    }
+
+    nav {
+        margin-top: 0;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-bottom: 1px solid #d0e8df;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    nav.open {
+        max-height: 200px;
+        /* ajustável */
+    }
+
+    nav .nav-item {
+        padding: 12px 20px;
+    }
+
 }
 
 /* Responsivo — mobile */
 @media (max-width: 480px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    z-index: 100;
-    padding: 10px 14px;
-    border-bottom: 1px solid #d0e8df;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 100;
+        padding: 10px 14px;
+        border-bottom: 1px solid #d0e8df;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
 
-  .sidebar-top {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
+    .sidebar-top {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
 
-  .logo { font-size: 18px; }
+    .logo {
+        font-size: 18px;
+    }
 
-  .sidebar-top .usuario {
-    font-size: 12px;
-    flex: 1;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+    .sidebar-top .usuario {
+        font-size: 12px;
+        flex: 1;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
-  .logout {
-    width: auto;
-    padding: 6px 10px;
-    margin-top: 0;
-    white-space: nowrap;
-    font-size: 12px;
-  }
+    .logout {
+        width: auto;
+        padding: 6px 10px;
+        margin-top: 0;
+        white-space: nowrap;
+        font-size: 12px;
+    }
 
-  nav { display: none; }
 }
 </style>
