@@ -328,10 +328,6 @@ function cancelarEdicao(ex) {
   backupExercicio.value = null;
 }
 
-function toUpperCase(str) {
-  return str.toUpperCase();
-}   
-
 function validarRepeticoes(min, max) {
   return min <= max;
 }

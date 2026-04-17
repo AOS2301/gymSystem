@@ -23,8 +23,8 @@ const emit = defineEmits(["logout"]);
 const router = useRouter();
 
 const navItems = [
-    { key: "treinos", label: "Treinos da Semana" },
-    { key: "dieta", label: "Dieta da Semana" },
+    { key: "treinos", label: "Treinos da Semana", to: "/home" },
+    { key: "exercicios", label: "Exercício do dia", to: "/exercicio" },
     // Adicione futuros itens aqui
 ];
 
@@ -43,11 +43,14 @@ function logout() {
             </button>
         </div>
 
+
         <nav :class="{ open: menuAberto }">
-            <a v-for="item in navItems" :key="item.key" class="nav-item" :class="{ active: activeItem === item.key }">
+            <router-link v-for="item in navItems" :key="item.key" :to="item.to" class="nav-item"
+                :class="{ active: activeItem === item.key }" @click="menuAberto = false">
                 {{ item.label }}
-            </a>
+            </router-link>
         </nav>
+
     </aside>
 </template>
 
