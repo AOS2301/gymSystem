@@ -8,9 +8,6 @@ import "../assets/css/home.css";
 const router = useRouter();
 const API_URL = import.meta.env.VITE_API_URL;
 
-/* ==================================================
-   ESTADO GLOBAL / UI
-================================================== */
 const nomeUsuario = ref("");
 const modalAberto = ref(false);
 const sugestoesAbertas = ref(false);
@@ -18,14 +15,12 @@ const editandoId = ref(null);
 const backupExercicio = ref(null);
 const descansoEmMinutos = ref(true);
 
-/* ==================================================
-   CATÁLOGO DE EXERCÍCIOS (autocomplete)
-================================================== */
+// NOVO — modal de confirmação
+const modalConfirmacaoAberto = ref(false);
+const dadosParaRemover = ref(null);
+
 const exerciciosCatalogo = ref([]);
 
-/* ==================================================
-   DIAS DA SEMANA (base fixa)
-================================================== */
 const DIAS_SEMANA = [
   { id: 1, sigla: "SEG", nome: "Segunda" },
   { id: 2, sigla: "TER", nome: "Terça" },
@@ -36,9 +31,6 @@ const DIAS_SEMANA = [
   { id: 7, sigla: "DOM", nome: "Domingo" },
 ];
 
-/* ==================================================
-   TREINOS DA SEMANA (UI)
-================================================== */
 const treinosSemana = ref(
   DIAS_SEMANA.map(dia => ({
     ...dia,
@@ -46,9 +38,6 @@ const treinosSemana = ref(
   }))
 );
 
-/* ==================================================
-   FORMULÁRIO (modal)
-================================================== */
 const formTreino = reactive({
   diaSemanaId: null,
   exercicioId: null,
@@ -60,9 +49,6 @@ const formTreino = reactive({
   peso: "",
 });
 
-/* ==================================================
-   COMPUTEDS
-================================================== */
 const nomeDiaSelecionado = computed(() => {
   const dia = DIAS_SEMANA.find(d => d.id === formTreino.diaSemanaId);
   return dia ? dia.nome : "";
@@ -76,18 +62,12 @@ const exerciciosFiltrados = computed(() => {
   );
 });
 
-/* ==================================================
-   CICLO DE VIDA
-================================================== */
 onMounted(async () => {
   nomeUsuario.value = localStorage.getItem("nome");
   await carregarCatalogoExercicios();
   await carregarTreinosSemana();
 });
 
-/* ==================================================
-   API - EXERCÍCIOS
-================================================== */
 async function carregarCatalogoExercicios() {
   const token = localStorage.getItem("token");
   const response = await fetch(`${API_URL}/exe/exercicios`, {
@@ -100,9 +80,6 @@ async function carregarCatalogoExercicios() {
   exerciciosCatalogo.value = await response.json();
 }
 
-/* ==================================================
-   API - TREINOS
-================================================== */
 async function carregarTreinosSemana() {
   const token = localStorage.getItem("token");
   const response = await fetch(`${API_URL}/treino/treino`, {
@@ -121,7 +98,6 @@ async function carregarTreinosSemana() {
     const diaUI = treinosSemana.value.find(d => d.id === treinoApi.diaSemana);
     if (!diaUI) return;
 
-    // Garante que a lista já venha ordenada pelo campo `ordem`
     const exerciciosOrdenados = [...treinoApi.exercicios].sort(
       (a, b) => a.ordem - b.ordem
     );
@@ -140,13 +116,17 @@ async function carregarTreinosSemana() {
   });
 }
 
+// MODIFICADO — abre o modal em vez do confirm()
 async function removerExercicioDoDia(diaSemanaId, exercicioId) {
-  if (!confirm("Tem certeza que deseja remover este exercício?")) {
-    editandoId.value = null;
-    return;
-  }
+  dadosParaRemover.value = { diaSemanaId, exercicioId };
+  modalConfirmacaoAberto.value = true;
+}
 
+// NOVO — chamado pelo botão "Remover" do modal de confirmação
+async function confirmarRemocao() {
   const token = localStorage.getItem("token");
+  const { diaSemanaId, exercicioId } = dadosParaRemover.value;
+
   const response = await fetch(`${API_URL}/treino/treino`, {
     method: "DELETE",
     headers: {
@@ -158,7 +138,17 @@ async function removerExercicioDoDia(diaSemanaId, exercicioId) {
 
   if (!response.ok) { alert("Erro ao remover exercício"); return; }
 
+  modalConfirmacaoAberto.value = false;
+  dadosParaRemover.value = null;
+  editandoId.value = null;
   await carregarTreinosSemana();
+}
+
+// NOVO — chamado pelo botão "Cancelar" do modal de confirmação
+function cancelarRemocao() {
+  modalConfirmacaoAberto.value = false;
+  dadosParaRemover.value = null;
+  editandoId.value = null;
 }
 
 function alterarExercicio(ex) {
@@ -193,15 +183,6 @@ async function salvarEdicao(ex) {
   editandoId.value = null;
 }
 
-/* ==================================================
-   DRAG & DROP — persistência de ordem
-================================================== */
-
-/**
- * Chamado pelo @end do <draggable>.
- * Envia ao backend a nova sequência de IDs para o dia arrastado.
- */
-
 async function onDragEnd(dia) {
   const token = localStorage.getItem("token");
 
@@ -228,9 +209,6 @@ async function onDragEnd(dia) {
   }
 }
 
-/* ==================================================
-   MODAL
-================================================== */
 async function salvarTreino() {
   if (!validarRepeticoes(formTreino.repeticoes_min, formTreino.repeticoes_max)) {
     alert("Repetições mínimas não podem ser maiores que as Repetições máximas");
@@ -278,9 +256,6 @@ function fecharModal() {
   sugestoesAbertas.value = false;
 }
 
-/* ==================================================
-   AUTOCOMPLETE
-================================================== */
 function onExerciseInput() {
   sugestoesAbertas.value = true;
 }
@@ -291,9 +266,6 @@ function selecionarExercicio(exercicio) {
   sugestoesAbertas.value = false;
 }
 
-/* ==================================================
-   UTILITÁRIOS
-================================================== */
 function resetForm() {
   Object.assign(formTreino, {
     diaSemanaId: null,
@@ -388,14 +360,14 @@ function validarRepeticoes(min, max) {
                   <span v-else>
                     {{ ex.repeticoes_min }} - {{ ex.repeticoes_max }}
                   </span>
-                  
+
                   <span v-if="editandoId === ex.id">
                     <input v-model.number="ex.descanso" type="number" />
                   </span>
                   <span v-else>
                     {{ ex.descanso >= 60
                       ? (ex.descanso / 60) + " min"
-                    : ex.descanso + " seg"
+                      : ex.descanso + " seg"
                     }}
                   </span>
 
@@ -437,7 +409,7 @@ function validarRepeticoes(min, max) {
         </div>
       </section>
 
-      <!-- MODAL -->
+      <!-- MODAL ADICIONAR -->
       <div v-if="modalAberto" class="modal-overlay" @click.self="fecharModal">
         <div class="modal">
           <h3>Incluir exercício</h3>
@@ -492,6 +464,20 @@ function validarRepeticoes(min, max) {
           </div>
         </div>
       </div>
+
+      <!-- MODAL CONFIRMAÇÃO REMOÇÃO -->
+      <div v-if="modalConfirmacaoAberto" class="modal-overlay" @click.self="cancelarRemocao">
+        <div class="modal modal-confirm">
+          <div class="confirm-icon">🗑️</div>
+          <h3>Remover exercício?</h3>
+          <p>Esta ação não pode ser desfeita.</p>
+          <div class="modal-actions">
+            <button class="btn-secondary" @click="cancelarRemocao">Cancelar</button>
+            <button class="btn-danger" @click="confirmarRemocao">Remover</button>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </template>

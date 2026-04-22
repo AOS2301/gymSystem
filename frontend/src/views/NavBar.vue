@@ -1,57 +1,66 @@
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 const menuAberto = ref(false);
+const route = useRoute(); // ← pega a rota atual
 
 function toggleMenu() {
-    menuAberto.value = !menuAberto.value;
+  menuAberto.value = !menuAberto.value;
 }
 
 const props = defineProps({
-    nomeUsuario: {
-        type: String,
-        default: "",
-    },
-    activeItem: {
-        type: String,
-        default: "treinos",
-    },
+  nomeUsuario: {
+    type: String,
+    default: "",
+  },
+
+  activeItem: {
+    type: String,
+    default: "",
+  },
 });
 
 const emit = defineEmits(["logout"]);
 const router = useRouter();
 
 const navItems = [
-    { key: "treinos", label: "Treinos da Semana", to: "/home" },
-    { key: "exercicios", label: "Exercício do dia", to: "/exercicio" },
-    // Adicione futuros itens aqui
+  { key: "treinos", label: "Treinos da Semana", to: "/home" },
+  { key: "exercicios", label: "Exercício do dia", to: "/exercicio" },
 ];
 
+const itemAtivo = computed(() => {
+  const item = navItems.find(n => n.to === route.path);
+  return item ? item.key : props.activeItem;
+});
+
 function logout() {
-    emit("logout");
+  emit("logout");
 }
 </script>
+
 <template>
-    <aside class="sidebar">
-        <div class="sidebar-top">
-            <h1 class="logo">Train<span>Hub</span></h1>
-            <h1 class="usuario">{{ nomeUsuario.toUpperCase() }}</h1>
-            <button class="logout" @click="logout">Sair</button>
-            <button class="menu-toggle" @click="toggleMenu">
-                ☰
-            </button>
-        </div>
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <h1 class="logo">Train<span>Hub</span></h1>
+      <h1 class="usuario">{{ nomeUsuario.toUpperCase() }}</h1>
+      <button class="logout" @click="logout">Sair</button>
+      <button class="menu-toggle" @click="toggleMenu">☰</button>
+    </div>
 
-
-        <nav :class="{ open: menuAberto }">
-            <router-link v-for="item in navItems" :key="item.key" :to="item.to" class="nav-item"
-                :class="{ active: activeItem === item.key }" @click="menuAberto = false">
-                {{ item.label }}
-            </router-link>
-        </nav>
-
-    </aside>
+    <nav :class="{ open: menuAberto }">
+      <router-link
+        v-for="item in navItems"
+        :key="item.key"
+        :to="item.to"
+        class="nav-item"
+        :class="{ active: itemAtivo === item.key }"
+        @click="menuAberto = false"
+      >
+        {{ item.label }}
+      </router-link>
+    </nav>
+  </aside>
 </template>
 
 <style scoped>
@@ -103,9 +112,11 @@ nav {
 }
 
 .nav-item {
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none; /* ← adiciona isso */
+  color: #444;           /* ← cor padrão */
 }
 
 .nav-item.active {

@@ -138,7 +138,7 @@ function diminuirTempo() {
 
 <template>
     <div class="home-container">
-        <NavBar :nomeUsuario="nomeUsuario" activeItem="treinos" @logout="logout" />
+        <NavBar :nomeUsuario="nomeUsuario" activeItem="exercicios"@logout="logout"/>
         <main class="content">
             <header class="header">
                 <h2>Exercícios do <span>Dia</span></h2>
