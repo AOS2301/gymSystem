@@ -74,10 +74,6 @@ const progressoExercicio = computed(() =>
 onMounted(async () => {
   nomeUsuario.value = localStorage.getItem("nome");
   await carregarTreinosDoDia();
-
-  if (treinoJaConcluidoHoje()) {
-    fase.value = "concluido";
-  }
 });
 
 onBeforeUnmount(() => {
@@ -179,7 +175,6 @@ function voltarParaExercicio() {
     serieAtualIdx.value = 0;
     fase.value = "em-treino";
   } else {
-    marcarTreinoConcluido();
     fase.value = "concluido";
   }
 }
@@ -208,27 +203,6 @@ function redirectLogin() {
 }
 
 function logout() { redirectLogin(); }
-
-
-/* ==================================================
-   CONTROLE DE TREINO CONCLUÍDO (LOCALSTORAGE)
-================================================== */
-function getHojeKey() {
-  const hoje = new Date();
-  const yyyy = hoje.getFullYear();
-  const mm = String(hoje.getMonth() + 1).padStart(2, "0");
-  const dd = String(hoje.getDate()).padStart(2, "0");
-  return `treinoConcluido_${yyyy}-${mm}-${dd}`;
-}
-
-function treinoJaConcluidoHoje() {
-  return localStorage.getItem(getHojeKey()) === "true";
-}
-
-function marcarTreinoConcluido() {
-  localStorage.setItem(getHojeKey(), "true");
-}
-
 </script>
 
 <template>
@@ -255,7 +229,7 @@ function marcarTreinoConcluido() {
           <div v-else-if="treinosDoDia.length === 0" class="empty-msg">
             Nenhum treino cadastrado para hoje. 💤
           </div>
-          
+
           <div v-else>
             <!-- Preview da lista -->
             <div class="card-body">
@@ -275,14 +249,11 @@ function marcarTreinoConcluido() {
               </div>
             </div>
 
-           <div class="treino-start">
-              <button v-if="!carregando && treinosDoDia.length > 0 && !treinoJaConcluidoHoje()" class="btn-comecar"
-                @click="comecarTreino">
+            <div class="treino-start">
+              <button 
+                class="btn-comecar" @click="comecarTreino">
                 ▶ Começar Treino
               </button>
-              <div v-else-if="treinoJaConcluidoHoje()" class="empty-msg">
-                ✅ Treino de hoje já foi concluído.
-              </div>
             </div>
           </div>
         </div>
@@ -351,7 +322,7 @@ function marcarTreinoConcluido() {
           <button 
             v-else 
             class="btn-concluir" 
-            @click="() => { marcarTreinoConcluido(); fase = 'concluido'; }"
+            @click="fase = 'concluido'"
           >
             ✓ Concluir Treino
           </button>
@@ -416,7 +387,7 @@ function marcarTreinoConcluido() {
           <div class="concluido-subtitulo">
             Você completou {{ totalExercicios }} exercício{{ totalExercicios > 1 ? 's' : '' }} hoje.
           </div>
-          <button class="btn-comecar" @click="reiniciarTreino">Ver Exercícios do Dia</button>
+          <button class="btn-comecar" @click="reiniciarTreino">Ver Exercicios do dia!</button>
         </div>
 
       </section>
@@ -666,8 +637,10 @@ function marcarTreinoConcluido() {
 }
 
 .cronometro-controles {
-  align-items: center;
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;   /* força ficar lado a lado */
+  justify-content: center;  /* centraliza horizontalmente */  
+  padding-bottom: 10px;
   gap: 12px;
 }
 
