@@ -625,5 +625,38 @@
       "Retorne puxando com o abdômen.",
       "Repita pelo número de repetições recomendado."
     ]
+  },
+  {
+    "id": "supino_sentado_maquina",
+    "name": "Supino Sentado na Máquina",
+    "instructions": [
+      "Sente-se na máquina de supino",
+      "Ajuste a regulagem do banco e pegada da maquina",
+      "Empurre a máquina para cima contraindo o peitoral",
+      "Desça a a maquina controladamente até o peitoral sentir o alongamento",
+      "Repita pelo número de repetições recomendado."
+    ]
+  },
+  {
+    "id": "agachamento_smith",
+    "name": "Agachamento na Máquina Smith",
+    "instructions": [
+      "Posicione-se na máquina Smith com os pés nos suportes.",
+      "Ajuste a regulagem da barra para sua altura.",
+      "Descenda até que os joelhos formem um ângulo de 90 graus.",
+      "Levante-se controladamente.",
+      "Repita pelo número de repetições recomendado."
+    ]
+  },
+  {
+    "id": "mesa_flexora",
+    "name": "Mesa Flexora",
+    "instructions": [
+      "Posicione-se na máquina de mesa flexora com os pés nos suportes.",
+      "Ajuste a regulagem da barra para sua altura.",
+      "Flexione os joelhos puxando a barra em direção aos glúteos.",
+      "Estenda as pernas controladamente.",
+      "Repita pelo número de repetições recomendado."
+    ]
   }
 ]
