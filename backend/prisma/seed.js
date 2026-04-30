@@ -16,8 +16,14 @@ const exercicios = JSON.parse(
 );
 
 async function main() {
-  console.log("🌱 Importando exercícios em português...");
+  const count = await prisma.exercicio.count();
+  if (count > 0) {
+    console.log("🌱 Seed já executada, pulando...");
+    return;
+  }
 
+  console.log("🌱 Importando exercícios em português...");
+  
   for (const ex of exercicios) {
     await prisma.exercicio.create({
       data: {
