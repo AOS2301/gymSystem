@@ -30,6 +30,23 @@ export class treinoController {
     }
   }
 
+  static async importarTreinos(req, res) {
+    try {
+      const userId = req.user.id;
+      const { pdf } = req.body;
+
+      if (!pdf) {
+        return res.status(400).json({ message: "Nenhum arquivo PDF enviado" });
+      }
+
+      const resultado = await treinoService.importarTreinos(userId, { pdf });
+      return res.status(200).json(resultado);
+    } catch (error) {
+      console.error("Erro ao importar treino:", error);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
   static async removerTreino(req, res) {
     try {
       const userId = req.user.id;

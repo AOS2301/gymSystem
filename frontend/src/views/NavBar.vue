@@ -25,6 +25,7 @@ const emit = defineEmits(["logout"]);
 const router = useRouter();
 
 const navItems = [
+  { key: "PDF", label: "Leitura de PDF", to: "/upload" },
   { key: "treinos", label: "Treinos da Semana", to: "/home" },
   { key: "exercicios", label: "Exercício do dia", to: "/exercicio" },
 ];
