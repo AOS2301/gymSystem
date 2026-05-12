@@ -130,17 +130,19 @@ export class treinoService {
     }
 
     const prompt = `
-Você é um assistente especialista em leitura de fichas de treino.
-Analise e retorne SOMENTE um JSON válido, sem explicações, sem markdown.
-
+Você é um especialista em leitura de fichas de treino de academia. Sua tarefa é extrair dados estruturados de um texto de ficha de treino.
+ 
+Retorne SOMENTE um JSON válido, sem nenhuma explicação, sem markdown, sem blocos de código, sem texto antes ou depois.
+ 
+ESTRUTURA OBRIGATÓRIA do JSON:
 {
-  "aluno": "nome ou null",
-  "personal": "nome ou null",
-  "mes": "mês ou null",
+  "aluno": "nome completo do aluno ou null",
+  "personal": "nome completo do personal ou null",
+  "mes": "mês e ano de referência ou null",
   "treinos": [
     {
-      "diaSemana": "Segunda|Terça|Quarta|Quinta|Sexta|Sábado|Domingo",
-      "grupoMuscular": "ex: Peito e Tríceps ou null",
+      "diaSemana": "Segunda",
+      "grupoMuscular": "nome do grupo muscular ou null",
       "exercicios": [
         {
           "nome": "nome do exercício",
@@ -148,24 +150,63 @@ Analise e retorne SOMENTE um JSON válido, sem explicações, sem markdown.
           "repeticoes_min": número inteiro ou null,
           "repeticoes_max": número inteiro ou null,
           "descanso": segundos como inteiro ou null,
-          "peso": número decimal ou null
         }
       ]
     }
   ]
 }
-
-Regras:
-- Reps "10-12" → min=10, max=12; "10" → ambos=10
-- Descanso em segundos: "2 min"→120, "60s"→60, sem info→null
-- Peso sem info → null
-- Siglas: SEG→Segunda, TER→Terça, QUA→Quarta, QUI→Quinta, SEX→Sexta, SAB→Sábado, DOM→Domingo
-- Treinos A/B/C sem dia → A=Segunda, B=Quarta, C=Sexta
-- Ignore cardio
-
-Texto da ficha:
+ 
+REGRAS DE EXTRAÇÃO:
+ 
+1. IDENTIFICAÇÃO DOS TREINOS:
+   - Treinos podem ser identificados como "TREINO A", "TREINO B", etc.
+   - Reordene SEMPRE alfabeticamente (A, B, C, D...) independente da ordem no texto
+   - Nunca mapeie pela ordem de aparição no texto, sempre pela letra
+ 
+2. MAPEAMENTO DE DIAS (baseado na quantidade total de treinos encontrados):
+   - 2 treinos → A=Segunda, B=Quinta
+   - 3 treinos → A=Segunda, B=Quarta, C=Sexta
+   - 4 treinos → A=Segunda, B=Terça, C=Quinta, D=Sexta
+   - 5 treinos → A=Segunda, B=Terça, C=Quarta, D=Quinta, E=Sexta
+ 
+3. REPETIÇÕES:
+   - "6-8" → repeticoes_min=6, repeticoes_max=8
+   - "12-15" → repeticoes_min=12, repeticoes_max=15
+   - "10" (número único) → repeticoes_min=10, repeticoes_max=10
+   - Ignore qualquer valor que não seja número (ex: "X" na coluna Técnica)
+ 
+4. DESCANSO (sempre em segundos):
+   - "2-3min" ou "2-3 min" → 120 (usa o valor mínimo)
+   - "2min" ou "2 min" → 120
+   - "90s" ou "90 seg" → 90
+   - "1min30" → 90
+   - Sem informação → null
+ 
+5. GRUPO MUSCULAR:
+   - Se não estiver explícito no texto, infira pelos exercícios:
+     * Remada, Puxada, Pulldown → "Costas"
+     * Supino, Voador, Crucifixo → "Peito"
+     * Rosca, Bíceps → "Bíceps"
+     * Tríceps, Mergulho → "Tríceps"
+     * Agacho, Leg Press, Cadeira Extensora, Mesa Flexora → "Pernas"
+     * Panturrilha → "Panturrilha"
+     * Elevação Lateral, Desenvolvimento → "Ombros"
+     * Stiff, Búlgaro, Cadeira Adutora, Cadeira Abdutora → "Pernas Posterior"
+     * Combinações: use "Costas e Bíceps", "Peito e Tríceps", etc.
+ 
+6. O QUE IGNORAR COMPLETAMENTE:
+   - Dados de cardio (bike, esteira, BPM, frequência cardíaca, sprint)
+   - Coluna "Técnica" (valores como "X", "AMPLITUDE NO MAX!", etc.)
+   - Seções de dicas, observações ou recomendações gerais
+   - Qualquer texto que não seja exercício, série, repetição ou intervalo
+ 
+7. NOME DO EXERCÍCIO:
+   - Use o nome exato como aparece na ficha
+   - Se estiver em múltiplas linhas (ex: "Remada Convergente\nUnilateral"), junte em uma linha
+ 
+Texto da ficha extraído do PDF:
 ${textoPDF}
-  `.trim();
+    `.trim();
 
     const result = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",

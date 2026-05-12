@@ -10,7 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const nomeUsuario = ref(localStorage.getItem("nome") || "");
 
 // ── estado ──────────────────────────────────────────────────
-const arrastando = ref(false);
+const fileInput = ref(null);
 const arquivoSelecionado = ref(null);
 const nomeArquivo = ref("");
 const lendo = ref(false);
@@ -18,15 +18,7 @@ const erro = ref("");
 const resultado = ref(null);
 const etapa = ref("");
 
-// ── drag & drop / file input ─────────────────────────────────
-function onDrop(e) {
-  arrastando.value = false;
-
-  const file = e.dataTransfer.files[0];
-
-  if (file) selecionarArquivo(file);
-}
-
+// ── file input ─────────────────────────────────
 function onFileInput(e) {
   const file = e.target.files[0];
 
@@ -51,31 +43,58 @@ function limpar() {
   erro.value = "";
   resultado.value = null;
   etapa.value = "";
+  if (fileInput.value) fileInput.value.value = "";
 }
 
 // ── upload para backend ──────────────────────────────────────
+
 async function lerPDF() {
-  // converte o arquivo para base64
-  const base64 = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(arquivoSelecionado.value);
-  });
+  if (!arquivoSelecionado.value) return;
 
-  const token = localStorage.getItem("token");
-  const response = await fetch(`${API_URL}/treino/importar`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ pdf: base64 }),
-  });
+  lendo.value = true;
+  erro.value = "";
 
-  const data = await response.json();
-  console.log(data);
-  resultado.value = data;
+  try {
+    etapa.value = "extraindo";
+
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = reject;
+
+      reader.readAsDataURL(arquivoSelecionado.value);
+    });
+
+    etapa.value = "enviando";
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/treino/importar`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ pdf: base64 }),
+    });
+
+    etapa.value = "interpretando";
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err?.message || `Erro (${response.status})`);
+    }
+
+    const data = await response.json();
+
+    resultado.value = data;
+  } catch (e) {
+    erro.value = e.message || "Erro inesperado ao importar o PDF.";
+  } finally {
+    lendo.value = false;
+    etapa.value = "";
+  }
 }
 
 // ── helpers ──────────────────────────────────────────────────
@@ -128,15 +147,14 @@ function logout() {
           <div class="card-body" style="padding: 1.5rem;">
 
             <div class="upload-zone" :class="{
-              'upload-zone--drag': arrastando,
               'upload-zone--filled': arquivoSelecionado
-            }" @dragover.prevent="arrastando = true" @dragleave="arrastando = false" @drop.prevent="onDrop"
-              @click="$refs.fileInput.click()">
+            }" @click="$refs.fileInput.click()">
+
               <input ref="fileInput" type="file" accept=".pdf" style="display:none" @change="onFileInput" />
 
               <div v-if="!arquivoSelecionado" class="upload-placeholder">
                 <span class="upload-icon">📄</span>
-                <p class="upload-title">Clique ou arraste o PDF aqui</p>
+                <p class="upload-title">Clique para selecionar o PDF</p>
                 <p class="upload-sub">Ficha enviada pelo seu personal</p>
               </div>
 
@@ -145,6 +163,7 @@ function logout() {
                 <p class="upload-filename">{{ nomeArquivo }}</p>
                 <p class="upload-sub">Arquivo pronto para leitura</p>
               </div>
+
             </div>
 
             <!-- Barra de status / loading -->
@@ -211,16 +230,15 @@ function logout() {
                 </span>
               </div>
 
-              <div class="table-header" style="grid-template-columns: 2fr 0.6fr 0.8fr 0.8fr 0.6fr;">
+              <div class="table-header" style="grid-template-columns: 2fr 0.7fr 1fr 1fr;">
                 <span>Exercício</span>
                 <span>Séries</span>
                 <span>Reps</span>
                 <span>Intervalo</span>
-                <span>Peso</span>
               </div>
 
               <div v-for="ex in treino.exercicios" :key="ex.nome" class="table-row"
-                style="grid-template-columns: 2fr 0.6fr 0.8fr 0.8fr 0.6fr;">
+                style="grid-template-columns: 2fr 0.7fr 1fr 1fr;">
                 <span>{{ ex.nome }}</span>
                 <span>{{ ex.series ?? "—" }}</span>
                 <span>
@@ -232,7 +250,6 @@ function logout() {
                   }}
                 </span>
                 <span>{{ formatarDescanso(ex.descanso) }}</span>
-                <span>{{ ex.peso != null ? ex.peso + " kg" : "—" }}</span>
               </div>
             </div>
 
@@ -264,10 +281,6 @@ function logout() {
 }
 
 .upload-zone:hover,
-.upload-zone--drag {
-  background: var(--hover-bg, #222);
-  border-color: var(--accent, #c0392b);
-}
 
 .upload-zone--filled {
   border-style: solid;
@@ -326,9 +339,9 @@ function logout() {
 }
 
 .status-loading {
-  background: rgba(192, 57, 43, 0.1);
-  color: var(--text-primary, #fff);
-  border: 1px solid rgba(192, 57, 43, 0.25);
+  background: rgba(142, 255, 77, 0.1);
+  color: var(--text-primary, #000000);
+  border: 1px solid rgba(0, 212, 35, 0.25);
 }
 
 /* ── Spinner ── */
@@ -376,7 +389,7 @@ function logout() {
 
 .result-value {
   font-weight: 500;
-  color: var(--text-primary, #fff);
+  color: var(--text-primary, #00b652);
 }
 
 /* ── Treino por dia ── */
@@ -384,14 +397,23 @@ function logout() {
   margin-top: 1.5rem;
 }
 
+
 .treino-dia-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: var(--text-primary, #fff);
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  color: var(--text-primary, #222);
+
+  border-bottom: 1px solid var(--border-color, #333);
 }
+
 
 .grupo-tag {
   font-size: 11px;
