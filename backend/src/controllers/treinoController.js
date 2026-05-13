@@ -100,4 +100,23 @@ export class treinoController {
       });
     }
   }
+
+
+  static async adicionarPDF(req, res) {
+    try {
+      const userId = req.user.id;
+      const { data } = req.body;
+
+      if (!data) {
+        return res.status(400).json({ message: "Campo 'data' é obrigatório." });
+      }
+
+      const resultado = await treinoService.adicionarPDF(userId, data);
+      return res.status(200).json(resultado);
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message || "Erro interno ao adicionar PDF",
+      });
+    }
+  }
 }

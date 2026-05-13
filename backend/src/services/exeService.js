@@ -10,4 +10,10 @@ export class exeService {
       (exercicio) => new ExercicioDTO(exercicio)
     );
   }
+
+  static async incluirExercicio(data) {
+    const exercicio = await ExercicioRepository.incluirExercicio(data);
+
+    return new ExercicioDTO(exercicio);
+  }
 }

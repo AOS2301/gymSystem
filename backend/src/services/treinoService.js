@@ -124,16 +124,41 @@ export class treinoService {
     const pdfBuffer = Buffer.from(pdf, "base64");
     const pdfData = await pdfParse(pdfBuffer);
     const textoPDF = pdfData.text?.trim();
+    const textoNormalizado = normalizarTexto(textoPDF);
 
-    if (!textoPDF) {
+    if (!textoNormalizado) {
       throw new Error("Não foi possível extrair texto do PDF.");
     }
 
     const prompt = `
-Você é um especialista em leitura de fichas de treino de academia. Sua tarefa é extrair dados estruturados de um texto de ficha de treino.
+Você é um especialista em leitura de fichas de treino.
+
+Extraia os dados do texto abaixo e retorne SOMENTE um JSON válido.
  
-Retorne SOMENTE um JSON válido, sem nenhuma explicação, sem markdown, sem blocos de código, sem texto antes ou depois.
- 
+Regras:
+- Treinos são identificados por "TREINO A", "TREINO B", etc
+- Ordene os treinos alfabeticamente antes de mapear os dias
+- Ignore observações gerais
+- Ignore coluna técnica
+- "6-8" = repetições mínimas e máximas
+- "2-3min" = 120 segundos
+
+Mapeamento:
+2 treinos:
+A=Segunda
+B=Quinta
+
+3 treinos:
+A=Segunda
+B=Quarta
+C=Sexta
+
+4 treinos:
+A=Segunda
+B=Terça
+C=Quinta
+D=Sexta
+
 ESTRUTURA OBRIGATÓRIA do JSON:
 {
   "aluno": "nome completo do aluno ou null",
@@ -142,70 +167,19 @@ ESTRUTURA OBRIGATÓRIA do JSON:
   "treinos": [
     {
       "diaSemana": "Segunda",
-      "grupoMuscular": "nome do grupo muscular ou null",
       "exercicios": [
         {
           "nome": "nome do exercício",
           "series": número inteiro ou null,
           "repeticoes_min": número inteiro ou null,
           "repeticoes_max": número inteiro ou null,
-          "descanso": segundos como inteiro ou null,
+          "descanso": segundos como inteiro ou null
         }
       ]
     }
   ]
 }
- 
-REGRAS DE EXTRAÇÃO:
- 
-1. IDENTIFICAÇÃO DOS TREINOS:
-   - Treinos podem ser identificados como "TREINO A", "TREINO B", etc.
-   - Reordene SEMPRE alfabeticamente (A, B, C, D...) independente da ordem no texto
-   - Nunca mapeie pela ordem de aparição no texto, sempre pela letra
- 
-2. MAPEAMENTO DE DIAS (baseado na quantidade total de treinos encontrados):
-   - 2 treinos → A=Segunda, B=Quinta
-   - 3 treinos → A=Segunda, B=Quarta, C=Sexta
-   - 4 treinos → A=Segunda, B=Terça, C=Quinta, D=Sexta
-   - 5 treinos → A=Segunda, B=Terça, C=Quarta, D=Quinta, E=Sexta
- 
-3. REPETIÇÕES:
-   - "6-8" → repeticoes_min=6, repeticoes_max=8
-   - "12-15" → repeticoes_min=12, repeticoes_max=15
-   - "10" (número único) → repeticoes_min=10, repeticoes_max=10
-   - Ignore qualquer valor que não seja número (ex: "X" na coluna Técnica)
- 
-4. DESCANSO (sempre em segundos):
-   - "2-3min" ou "2-3 min" → 120 (usa o valor mínimo)
-   - "2min" ou "2 min" → 120
-   - "90s" ou "90 seg" → 90
-   - "1min30" → 90
-   - Sem informação → null
- 
-5. GRUPO MUSCULAR:
-   - Se não estiver explícito no texto, infira pelos exercícios:
-     * Remada, Puxada, Pulldown → "Costas"
-     * Supino, Voador, Crucifixo → "Peito"
-     * Rosca, Bíceps → "Bíceps"
-     * Tríceps, Mergulho → "Tríceps"
-     * Agacho, Leg Press, Cadeira Extensora, Mesa Flexora → "Pernas"
-     * Panturrilha → "Panturrilha"
-     * Elevação Lateral, Desenvolvimento → "Ombros"
-     * Stiff, Búlgaro, Cadeira Adutora, Cadeira Abdutora → "Pernas Posterior"
-     * Combinações: use "Costas e Bíceps", "Peito e Tríceps", etc.
- 
-6. O QUE IGNORAR COMPLETAMENTE:
-   - Dados de cardio (bike, esteira, BPM, frequência cardíaca, sprint)
-   - Coluna "Técnica" (valores como "X", "AMPLITUDE NO MAX!", etc.)
-   - Seções de dicas, observações ou recomendações gerais
-   - Qualquer texto que não seja exercício, série, repetição ou intervalo
- 
-7. NOME DO EXERCÍCIO:
-   - Use o nome exato como aparece na ficha
-   - Se estiver em múltiplas linhas (ex: "Remada Convergente\nUnilateral"), junte em uma linha
- 
-Texto da ficha extraído do PDF:
-${textoPDF}
+${textoNormalizado}
     `.trim();
 
     const result = await groq.chat.completions.create({
@@ -216,11 +190,74 @@ ${textoPDF}
     const textoResposta = result.choices[0].message.content;
 
     const limpo = textoResposta.replace(/```json|```/g, "").trim();
+    const json = JSON.parse(limpo);
+
+    corrigirDiasTreino(json);
 
     try {
-      return JSON.parse(limpo);
+      return json;
     } catch {
       throw new Error("A IA retornou um formato inesperado. Tente novamente.");
     }
   }
+
+  static async adicionarPDF(userId, data) {
+    /*const json = data.data;
+    //separa o json em treinos
+    //para cada treino, verifica se já existe um treino para aquele dia
+    //se existir, adiciona os exercícios ao treino existente
+    //se não existir, cria um novo treino e adiciona os exercícios
+    //se não for possivel encontrar algum exercicio, será adicionado antes de criar o treinoExercicio
+
+
+    const treinoExercicio = await TreinoExercicioRepository.create({
+      treino_id: treino.id,
+      exercicio_id: treinoData.exercicioId,
+      series: treinoData.series,
+      repeticoes_min: treinoData.repeticoes_min,
+      repeticoes_max: treinoData.repeticoes_max,
+      descanso: treinoData.descanso,
+      peso: treinoData.peso,
+      ordem: novaOrdem
+    });
+
+    return {
+      treinoExercicio: new TreinoExercicioDTO(treinoExercicio),
+    };*/
+  }
+}
+
+function normalizarTexto(texto) {
+  return texto
+    .replace(/\r/g, "")
+
+    .replace(/TREINO\s+([A-Z])/gi, "\n\nTREINO $1\n")
+
+    .replace(/\n{3,}/g, "\n\n")
+
+    .replace(/([a-zÀ-ÿ])(\d)/g, "$1 $2")
+
+    .replace(/[ \t]{2,}/g, " ")
+
+    .trim();
+}
+
+function corrigirDiasTreino(json) {
+  if (!json?.treinos?.length) return;
+
+  const mapas = {
+    2: ["Segunda", "Quinta"],
+    3: ["Segunda", "Quarta", "Sexta"],
+    4: ["Segunda", "Terça", "Quinta", "Sexta"],
+    5: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"],
+  };
+
+  const dias = mapas[json.treinos.length];
+
+  if (!dias) return;
+
+  json.treinos = json.treinos.map((treino, index) => ({
+    ...treino,
+    diaSemana: dias[index],
+  }));
 }

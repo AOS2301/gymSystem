@@ -7,6 +7,7 @@ const router = Router();
 router.get("/treino", authGuard, treinoController.listarTreinos);
 router.post("/treino", authGuard, treinoController.incluirTreino);
 router.post("/importar", authGuard, treinoController.importarTreinos);
+router.post("/adicionarPDF", authGuard, treinoController.adicionarPDF);
 router.delete("/treino", authGuard, treinoController.removerTreino);
 router.patch("/treino/:id", authGuard, treinoController.atualizarTreino);
 router.patch("/treino/:diaId/ordem", authGuard, treinoController.reordenarTreinos);

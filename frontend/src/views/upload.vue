@@ -8,6 +8,7 @@ const router = useRouter();
 const API_URL = import.meta.env.VITE_API_URL;
 
 const nomeUsuario = ref(localStorage.getItem("nome") || "");
+console.log("token atual:", localStorage.getItem("token"));
 
 // ── estado ──────────────────────────────────────────────────
 const fileInput = ref(null);
@@ -65,7 +66,6 @@ async function lerPDF() {
 
       reader.readAsDataURL(arquivoSelecionado.value);
     });
-
     etapa.value = "enviando";
 
     const token = localStorage.getItem("token");
@@ -89,8 +89,45 @@ async function lerPDF() {
     const data = await response.json();
 
     resultado.value = data;
+    console.log("Resultado da importação:", data);
   } catch (e) {
     erro.value = e.message || "Erro inesperado ao importar o PDF.";
+  } finally {
+    lendo.value = false;
+    etapa.value = "";
+  }
+}
+
+
+async function salvarTreinosExtraidos() {
+  try {
+    if (!confirm("Deseja salvar os treinos extraídos no seu perfil? O treino atual será substituído.")) {
+      return;
+    }
+
+    lendo.value = true;
+    etapa.value = "salvando";
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/treino/adicionarPDF`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ data: resultado.value }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err?.message || `Erro (${response.status})`);
+    }
+
+    const saved = await response.json();
+    console.log("Treinos salvos:", saved);
+  } catch (e) {
+    erro.value = e.message || "Erro inesperado ao salvar treinos.";
   } finally {
     lendo.value = false;
     etapa.value = "";
@@ -169,9 +206,7 @@ function logout() {
             <!-- Barra de status / loading -->
             <div v-if="lendo" class="status-bar status-loading">
               <span class="spinner-inline"></span>
-              <span v-if="etapa === 'extraindo'">Extraindo texto do PDF…</span>
-              <span v-else-if="etapa === 'interpretando'">Interpretando com IA…</span>
-              <span v-else>Processando…</span>
+              <span>Processando…</span>
             </div>
 
             <div v-if="erro" class="status-bar status-error">
@@ -194,7 +229,6 @@ function logout() {
           <div class="card-header">
             <strong>✓</strong> Dados extraídos
           </div>
-
           <div class="card-body" style="padding: 1.5rem;">
 
             <!-- Resumo geral -->
@@ -225,9 +259,6 @@ function logout() {
             <div v-for="treino in resultado.treinos" :key="treino.diaSemana" class="treino-dia">
               <div class="treino-dia-header">
                 <strong>{{ treino.diaSemana }}</strong>
-                <span v-if="treino.grupoMuscular" class="grupo-tag">
-                  {{ treino.grupoMuscular }}
-                </span>
               </div>
 
               <div class="table-header" style="grid-template-columns: 2fr 0.7fr 1fr 1fr;">
@@ -256,8 +287,8 @@ function logout() {
             <!-- Ação futura: salvar no banco -->
             <div class="modal-actions" style="margin-top: 1.5rem;">
               <button class="btn-secondary" @click="limpar">Nova importação</button>
-              <button class="btn-primary" disabled title="Em breve">
-                Salvar no banco de dados
+              <button class="btn-primary" @click="salvarTreinosExtraidos">
+                Salvar no meu perfil
               </button>
             </div>
           </div>
@@ -412,16 +443,5 @@ function logout() {
   color: var(--text-primary, #222);
 
   border-bottom: 1px solid var(--border-color, #333);
-}
-
-
-.grupo-tag {
-  font-size: 11px;
-  background: rgba(192, 57, 43, 0.2);
-  color: #c0392b;
-  border: 1px solid rgba(192, 57, 43, 0.3);
-  border-radius: 20px;
-  padding: 2px 10px;
-  font-weight: 500;
 }
 </style>
