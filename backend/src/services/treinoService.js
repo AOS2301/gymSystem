@@ -2,6 +2,7 @@ import { TreinoRepository } from "../repositories/TreinoRepository.js";
 import { TreinoExercicioRepository } from "../repositories/TreinoExercicioRepository.js";
 import { TreinoDTO } from "../dto/TreinosDto.js";
 import { TreinoExercicioDTO } from "../dto/TreinoExercicioDto.js";
+import { ExercicioRepository } from "../repositories/ExercicioRepository.js";
 
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -10,6 +11,16 @@ const pdfParse = pdfParseModule.default ?? pdfParseModule;
 
 import Groq from "groq-sdk";
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+const DIA_SEMANA_ID = {
+  "Segunda": 1,
+  "Terça": 2,
+  "Quarta": 3,
+  "Quinta": 4,
+  "Sexta": 5,
+  "Sábado": 6,
+  "Domingo": 7,
+};
 
 export class treinoService {
   static async listarTreinos(userId) {
@@ -202,28 +213,65 @@ ${textoNormalizado}
   }
 
   static async adicionarPDF(userId, data) {
-    /*const json = data.data;
-    //separa o json em treinos
-    //para cada treino, verifica se já existe um treino para aquele dia
-    //se existir, adiciona os exercícios ao treino existente
-    //se não existir, cria um novo treino e adiciona os exercícios
-    //se não for possivel encontrar algum exercicio, será adicionado antes de criar o treinoExercicio
+    const treinos = data?.treinos;
 
+    if (!Array.isArray(treinos) || treinos.length === 0) {
+      throw new Error("Nenhum treino encontrado no PDF.");
+    }
+    
+    //Apaga todos os exercícios atuais do usuaário (PDF tem prioridade)
+    await TreinoExercicioRepository.deleteByUserId(userId);
 
-    const treinoExercicio = await TreinoExercicioRepository.create({
-      treino_id: treino.id,
-      exercicio_id: treinoData.exercicioId,
-      series: treinoData.series,
-      repeticoes_min: treinoData.repeticoes_min,
-      repeticoes_max: treinoData.repeticoes_max,
-      descanso: treinoData.descanso,
-      peso: treinoData.peso,
-      ordem: novaOrdem
-    });
+    const resultados = [];
+
+    for (const treinoData of treinos) {
+      const diaId = DIA_SEMANA_ID[treinoData.diaSemana];
+
+      if (!diaId) {
+        console.warn(`Dia inválido ignorado: ${treinoData.diaSemana}`);
+        continue;
+      }
+
+      // 1️⃣ Busca ou cria o treino do dia
+      let treino = await TreinoRepository.findByUserIdDiaId(userId, diaId);
+      if (!treino) {
+        treino = await TreinoRepository.create({
+          usuario_id: userId,
+          dia_semana: diaId,
+        });
+      }
+
+      // 2️⃣ Cria cada exercício do PDF
+      for (let ordem = 0; ordem < treinoData.exercicios.length; ordem++) {
+        const ex = treinoData.exercicios[ordem];
+
+        // Busca exercício no catálogo pelo nome
+        let exercicio = await ExercicioRepository.findByNome(ex.nome);
+
+        // Se não existir, cria no catálogo
+        if (!exercicio) {
+          exercicio = await ExercicioRepository.create(ex.nome);
+        }
+
+        await TreinoExercicioRepository.create({
+          treino_id: treino.id,
+          exercicio_id: exercicio.id,
+          series: ex.series ?? null,
+          repeticoes_min: ex.repeticoes_min ?? null,
+          repeticoes_max: ex.repeticoes_max ?? null,
+          descanso: ex.descanso ?? null,
+          peso: null, // PDF não traz peso
+          ordem,
+        });
+      }
+
+      resultados.push(treinoData.diaSemana);
+    }
 
     return {
-      treinoExercicio: new TreinoExercicioDTO(treinoExercicio),
-    };*/
+      success: true,
+      diasSalvos: resultados,
+    };
   }
 }
 

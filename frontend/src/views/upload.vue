@@ -17,7 +17,7 @@ const nomeArquivo = ref("");
 const lendo = ref(false);
 const erro = ref("");
 const resultado = ref(null);
-const etapa = ref("");
+const modalConfirmacaoAberto = ref(false);
 
 // ── file input ─────────────────────────────────
 function onFileInput(e) {
@@ -43,7 +43,6 @@ function limpar() {
   nomeArquivo.value = "";
   erro.value = "";
   resultado.value = null;
-  etapa.value = "";
   if (fileInput.value) fileInput.value.value = "";
 }
 
@@ -56,7 +55,6 @@ async function lerPDF() {
   erro.value = "";
 
   try {
-    etapa.value = "extraindo";
 
     const base64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -66,7 +64,6 @@ async function lerPDF() {
 
       reader.readAsDataURL(arquivoSelecionado.value);
     });
-    etapa.value = "enviando";
 
     const token = localStorage.getItem("token");
 
@@ -78,8 +75,6 @@ async function lerPDF() {
       },
       body: JSON.stringify({ pdf: base64 }),
     });
-
-    etapa.value = "interpretando";
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
@@ -94,19 +89,21 @@ async function lerPDF() {
     erro.value = e.message || "Erro inesperado ao importar o PDF.";
   } finally {
     lendo.value = false;
-    etapa.value = "";
   }
 }
 
+async function validaExtracao() { 
+  modalConfirmacaoAberto.value = true;
+}
+
+async function cancelarExtracao() {
+  modalConfirmacaoAberto.value = false;
+}
 
 async function salvarTreinosExtraidos() {
   try {
-    if (!confirm("Deseja salvar os treinos extraídos no seu perfil? O treino atual será substituído.")) {
-      return;
-    }
 
     lendo.value = true;
-    etapa.value = "salvando";
 
     const token = localStorage.getItem("token");
 
@@ -125,12 +122,12 @@ async function salvarTreinosExtraidos() {
     }
 
     const saved = await response.json();
-    console.log("Treinos salvos:", saved);
+
+    router.push("/home");
   } catch (e) {
     erro.value = e.message || "Erro inesperado ao salvar treinos.";
   } finally {
     lendo.value = false;
-    etapa.value = "";
   }
 }
 
@@ -284,16 +281,27 @@ function logout() {
               </div>
             </div>
 
-            <!-- Ação futura: salvar no banco -->
             <div class="modal-actions" style="margin-top: 1.5rem;">
               <button class="btn-secondary" @click="limpar">Nova importação</button>
-              <button class="btn-primary" @click="salvarTreinosExtraidos">
+              <button class="btn-primary" @click="validaExtracao">
                 Salvar no meu perfil
               </button>
             </div>
+
+            <div v-if="modalConfirmacaoAberto" class="modal-overlay" @click.self="cancelarExtracao">
+              <div class="modal modal-confirm">
+                <div class="confirm-icon">📋</div>
+                <h3>Confirmar importação?</h3>
+                <p>Os treinos atuais serão substituídos pelos dados importados.</p>
+                <div class="modal-actions">
+                  <button class="btn-secondary" @click="cancelarExtracao">Cancelar</button>
+                  <button class="btn-primary" @click="salvarTreinosExtraidos">Salvar</button>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
-
       </section>
     </main>
   </div>
@@ -420,14 +428,13 @@ function logout() {
 
 .result-value {
   font-weight: 500;
-  color: var(--text-primary, #00b652);
+  color: var(--text-primary, #000000);
 }
 
 /* ── Treino por dia ── */
 .treino-dia {
   margin-top: 1.5rem;
 }
-
 
 .treino-dia-header {
   display: flex;
@@ -443,5 +450,62 @@ function logout() {
   color: var(--text-primary, #222);
 
   border-bottom: 1px solid var(--border-color, #333);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.modal {
+  width: min(92vw, 420px);
+  padding: 24px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.modal h3 { margin: 0 0 10px; color: var(--color-primary); }
+.modal label { font-weight: 600; color: var(--color-text-muted); }
+.modal input,
+.modal select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius-md);
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.modal-confirm {
+  max-width: 360px;
+  text-align: center;
+}
+
+.confirm-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.modal-confirm h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.modal-confirm p {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 24px;
 }
 </style>

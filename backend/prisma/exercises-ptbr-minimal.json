@@ -627,17 +627,6 @@
     ]
   },
   {
-    "id": "supino_sentado_maquina",
-    "name": "Supino Sentado na Máquina",
-    "instructions": [
-      "Sente-se na máquina de supino",
-      "Ajuste a regulagem do banco e pegada da maquina",
-      "Empurre a máquina para cima contraindo o peitoral",
-      "Desça a a maquina controladamente até o peitoral sentir o alongamento",
-      "Repita pelo número de repetições recomendado."
-    ]
-  },
-  {
     "id": "agachamento_smith",
     "name": "Agachamento na Máquina Smith",
     "instructions": [
