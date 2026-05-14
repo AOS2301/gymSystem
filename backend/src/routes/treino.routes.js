@@ -5,6 +5,7 @@ import { authGuard } from "../guard/auth.guard.js";
 const router = Router();
 
 router.get("/treino", authGuard, treinoController.listarTreinos);
+router.get("/existe", authGuard, treinoController.verificarExistenciaTreinos);
 router.post("/treino", authGuard, treinoController.incluirTreino);
 router.post("/importar", authGuard, treinoController.importarTreinos);
 router.post("/adicionarPDF", authGuard, treinoController.adicionarPDF);

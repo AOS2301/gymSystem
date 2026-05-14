@@ -1,6 +1,19 @@
 import { treinoService } from "../services/treinoService.js"; `1`
 
 export class treinoController {
+  static async verificarExistenciaTreinos(req, res) {
+    try {
+      const userId = req.user.id;
+      const existe = await treinoService.verificarExistenciaTreinos(userId);
+      
+      return res.status(200).json({ existe });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro interno ao verificar existência de treinos",
+      });
+    }
+  }
+
   static async listarTreinos(req, res) {
     try {
       const userId = req.user.id;

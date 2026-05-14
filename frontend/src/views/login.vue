@@ -45,7 +45,24 @@ async function login() {
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("nome", data.user.nome);
-    router.push("/home");
+    
+    const temTreinos = await fetch(`${API_URL}/treino/existe`, {
+        headers: {
+          Authorization: `Bearer ${data.token}`,
+        },
+      }
+    );
+
+    const resposta = await temTreinos.json();
+    
+    console.log(resposta.existe);
+    console.log(typeof resposta.existe);
+    if (resposta.existe) {
+      router.push("/home");
+    } else {
+      router.push("/upload");
+    }
+
   } catch (error) {
     errorMsg.value = error.message || "Erro ao fazer login";
     statusMsg.value = "";

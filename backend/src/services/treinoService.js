@@ -23,6 +23,12 @@ const DIA_SEMANA_ID = {
 };
 
 export class treinoService {
+  static async verificarExistenciaTreinos(userId) {
+    const treinos = await TreinoRepository.findByUserId(userId);
+
+    return treinos.length > 0;
+  }
+  
   static async listarTreinos(userId) {
     const treinos = await TreinoRepository.findByUserId(userId);
 
