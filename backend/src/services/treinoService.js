@@ -28,7 +28,7 @@ export class treinoService {
 
     return treinos.length > 0;
   }
-  
+
   static async listarTreinos(userId) {
     const treinos = await TreinoRepository.findByUserId(userId);
 
@@ -80,6 +80,22 @@ export class treinoService {
       data.diaId,
       data.exercicioId
     );
+
+    if (result.count === 0) {
+      throw new Error("Exercício não encontrado para este dia");
+    }
+
+    return { success: true };
+  }
+
+  static async removerTodos(userId) {
+    const result = await TreinoExercicioRepository.deleteByUserId(userId);
+
+    if (result.count === 0) {
+      throw new Error("Nenhum exercício encontrado para este usuário");
+    }
+
+    return { success: true };
 
     if (result.count === 0) {
       throw new Error("Exercício não encontrado para este dia");
@@ -224,7 +240,7 @@ ${textoNormalizado}
     if (!Array.isArray(treinos) || treinos.length === 0) {
       throw new Error("Nenhum treino encontrado no PDF.");
     }
-    
+
     //Apaga todos os exercícios atuais do usuaário (PDF tem prioridade)
     await TreinoExercicioRepository.deleteByUserId(userId);
 

@@ -10,6 +10,7 @@ router.post("/treino", authGuard, treinoController.incluirTreino);
 router.post("/importar", authGuard, treinoController.importarTreinos);
 router.post("/adicionarPDF", authGuard, treinoController.adicionarPDF);
 router.delete("/treino", authGuard, treinoController.removerTreino);
+router.delete("/removeTodos", authGuard, treinoController.removerTodos);
 router.patch("/treino/:id", authGuard, treinoController.atualizarTreino);
 router.patch("/treino/:diaId/ordem", authGuard, treinoController.reordenarTreinos);
 

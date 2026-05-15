@@ -34,7 +34,7 @@ export class TreinoExercicioRepository {
     });
   }
 
-  // Apaga TODOS os exercícios cadastrados para o usuário(usado ao sobrescrever com PDF)
+  // Apaga TODOS os exercícios cadastrados para o usuário
   static async deleteByUserId(userId) {
     return prisma.treino_exercicio.deleteMany({
       where:{ treino: { usuario_id: userId } },
